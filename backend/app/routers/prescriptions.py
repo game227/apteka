@@ -61,6 +61,6 @@ def confirm_prescription(payload: PrescriptionConfirmRequest, db: Session = Depe
             raise HTTPException(status_code=404, detail=f"drug_id={item.drug_id} topilmadi")
 
         prices = get_drug_prices(db, drug, lat=payload.lat, lng=payload.lng, radius_km=payload.radius_km)
-        results.append(DrugPricesResponse(drug=_to_search_result(drug), prices=prices))
+        results.append(DrugPricesResponse(drug=to_search_result(drug), prices=prices))
 
     return PrescriptionConfirmResponse(results=results)
