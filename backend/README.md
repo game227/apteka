@@ -13,6 +13,11 @@ narxlarni solishtiradi, referent narxdan chetlanishni belgilaydi.
 
 ## O'rnatish
 
+Butun loyihani (bu papka + `frontend/`) bitta buyruq bilan ishga tushirish
+uchun repo ildizidagi `../start.sh` skriptidan foydalaning — u quyidagi
+barcha qadamlarni (Docker PostGIS, venv, migratsiya, seed) avtomatik
+bajaradi. Faqat backend ustida ishlayotgan bo'lsangiz, qo'lda:
+
 ```bash
 cd backend
 python3 -m venv .venv
@@ -21,8 +26,10 @@ cp .env.example .env   # keyin qiymatlarni to'ldiring
 ```
 
 `.env`da kerakli maydonlar:
-- `DATABASE_URL` — PostGIS yoqilgan Postgres bazasi. Unix socket orqali
-  ulanish uchun host qismini bo'sh qoldiring: `postgresql+psycopg://user@/dbname`
+- `DATABASE_URL` — PostGIS yoqilgan Postgres bazasi. Masalan Docker orqali:
+  `postgresql+psycopg://neo:neo@localhost:5433/apteka_db` (pastga qarang);
+  tizim Postgres'ida unix socket orqali ulanish uchun host qismini bo'sh
+  qoldiring: `postgresql+psycopg://user@/dbname`
 - `TELEGRAM_BOT_TOKEN` — @BotFather'dan, Login Widget imzosini tekshirish uchun
 - `GEMINI_API_KEY` — retsept skaneri va nom taxminlash uchun (bo'lmasa ham
   ishlaydi, faqat shu ikki funksiya cheklanadi)
@@ -30,9 +37,21 @@ cp .env.example .env   # keyin qiymatlarni to'ldiring
 
 ## Baza va migratsiya
 
+Mahalliy Postgres o'rniga tayyor PostGIS'li Docker konteyner (tizimda
+Postgres yo'q yoki root kerak bo'lmasin desangiz):
+
 ```bash
-# PostGIS kengaytmasi yoqilgan bo'lishi kerak:
-psql -d <dbname> -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+docker run -d --name apteka-postgis \
+  -e POSTGRES_USER=neo -e POSTGRES_PASSWORD=neo -e POSTGRES_DB=apteka_db \
+  -p 5433:5432 docker.io/postgis/postgis:16-3.4
+```
+
+Keyin (qaysi variant bo'lishidan qat'i nazar):
+
+```bash
+# Agar Postgis kengaytmasi hali yoqilmagan bo'lsa:
+docker exec apteka-postgis psql -U neo -d apteka_db -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+# yoki tizim Postgres uchun: psql -d <dbname> -c "CREATE EXTENSION IF NOT EXISTS postgis;"
 
 .venv/bin/alembic upgrade head
 ```
@@ -43,7 +62,9 @@ psql -d <dbname> -c "CREATE EXTENSION IF NOT EXISTS postgis;"
 .venv/bin/uvicorn app.main:app --reload --port 8000
 ```
 
-Swagger: http://localhost:8000/docs
+Swagger: http://localhost:8000/docs. Agar `frontend/dist` mavjud bo'lsa
+(`npm run build`), backend uni shu bitta portda ham serve qiladi —
+`../README.md`ga qarang.
 
 ## Demo ma'lumot (seed)
 
@@ -52,11 +73,18 @@ ta'sir moddasi (INN), ularga biriktirilgan ~250 ta savdo nomi (kirillcha
 alias'lari bilan), va Toshkentning 25 ta tumani bo'yicha taxminiy
 dorixonalar. `scripts/seed.py` shu ma'lumotni bazaga yozadi (har bir
 dorixonaga tasodifiy 30-50 ta dori narxi biriktiradi, ba'zilarini atayin
-referent narxdan 20%+ oshirib qo'yadi — "qimmat" belgisini sinash uchun):
+referent narxdan 20%+ oshirib qo'yadi — "qimmat" belgisini sinash uchun).
+Har ishga tushirishda demo jadvallarni tozalab qayta yozadi — faqat
+dev/test uchun:
 
 ```bash
 .venv/bin/python -m scripts.seed
 ```
+
+Natijada 3 ta demo foydalanuvchi ham yaratiladi (Telegram Login Widget
+sozlanmagan holatda frontend login sahifasida ko'rsatiladigan mock
+hisoblarga mos): `telegram_id=111` — oddiy foydalanuvchi, `222` —
+1-dorixonaga biriktirilgan `pharmacy_staff`, `333` — `admin`.
 
 ## Testlar
 

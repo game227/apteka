@@ -1,32 +1,52 @@
-# React + TypeScript + Vite
+# Dori narxlari platformasi — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+React 19 + TypeScript + React Router + Tailwind CSS. Backend'ning
+TZ_BACKEND.md 4-bo'limidagi 14 endpoint kontraktiga to'liq mos ravishda
+qurilgan (tiplar: `src/types/api.ts`).
 
-Currently, two official plugins are available:
+Butun loyihani ishga tushirish uchun repo ildizidagi `../start.sh`dan
+foydalaning. Faqat frontend ustida ishlayotgan bo'lsangiz:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## O'rnatish va ishga tushirish
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+cp .env.example .env   # kerak bo'lsa qiymatlarni tahrirlang
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+http://localhost:5173 — backend `.env`dagi `VITE_API_BASE_URL` orqali
+(standart: `http://localhost:8000`, CORS orqali) ulanadi.
+
+## `.env` maydonlari
+
+- `VITE_API_BASE_URL` — backend manzili. Backend bilan bitta portda ishlash
+  uchun (production build) bo'sh qoldiring — nisbiy so'rovlar ishlatiladi.
+- `VITE_USE_MOCK` — `true` bo'lsa, backend'siz to'liq ishlaydigan mock
+  server (`src/api/mock/`) ishlatiladi — dizayn/UI ustida backend'siz
+  ishlash uchun qulay.
+- `VITE_TELEGRAM_BOT_USERNAME` — bo'lsa, haqiqiy Telegram Login Widget
+  ko'rsatiladi; bo'lmasa (yoki mock rejimda) login sahifasida test
+  hisoblari bilan kirish tugmalari chiqadi (oddiy foydalanuvchi, dorixona
+  xodimi, admin).
+
+## Sahifalar
+
+- `/` — dori qidirish
+- `/dori/:drugId` — narxlar (masofa bo'yicha saralangan) + muqobil dorilar
+- `/retsept` — retsept rasmini yuklash, aniqlangan dorilarni tasdiqlash
+- `/kirish` — Telegram login (`?invite=` bilan — dorixona xodimi taklifi)
+- `/dorixona` — dorixona paneli (faqat `pharmacy_staff`): narxlarni
+  qo'lda/CSV orqali yangilash
+- `/admin` — admin panel (faqat `admin`): dorixona qo'shish, taklif
+  havolasi yaratish
+
+## Build
+
+```bash
+npm run build   # tsc -b && vite build -> dist/
+npm run lint
+```
+
+`dist/`ni backend orqali bitta portda serve qilish uchun `VITE_API_BASE_URL=""`
+bilan build qiling (`../start.sh` shuni avtomatik bajaradi).
