@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Turkumlar — Dori Narxlari{% endblock %}
+{% block content %}
+<h1 class="mb-6 text-2xl font-bold text-gray-900">Turkumlar</h1>
+<div class="grid gap-3 sm:grid-cols-2">
+  {% for cat in categories %}
+    <a href="{{ cat.get_absolute_url }}" class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:border-brand-300">
+      <p class="text-lg font-semibold text-gray-900">{{ cat.icon }} {{ cat.name_uz }}</p>
+      <p class="text-sm text-gray-500">{{ cat.substances.count }} ta ta'sir moddasi</p>
+    </a>
+  {% empty %}
+    <p class="text-gray-400">Hali turkumlar qo'shilmagan.</p>
+  {% endfor %}
+</div>
+{% endblock %}

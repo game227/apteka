@@ -1,0 +1,63 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Dori Narxlari{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: { brand: { 50:'#f0fdfa',100:'#ccfbf1',600:'#0d9488',700:'#0f766e' } } } } }
+  </script>
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-screen bg-gray-50 flex flex-col">
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-20">
+    <div class="mx-auto max-w-5xl px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <a href="{% url 'catalog:home' %}" class="text-lg font-bold text-brand-700 flex items-center gap-1">💊 Dori Narxlari</a>
+      <nav class="flex flex-wrap items-center gap-4 text-sm">
+        <a href="{% url 'catalog:home' %}" class="text-gray-600 hover:text-brand-700">Qidiruv</a>
+        <a href="{% url 'catalog:category_list' %}" class="text-gray-600 hover:text-brand-700">Turkumlar</a>
+        {% if user.is_authenticated %}
+          <a href="{% url 'prescriptions:upload' %}" class="text-gray-600 hover:text-brand-700">Retsept</a>
+          {% if user.is_pharmacy_staff %}
+            <a href="{% url 'pharmacies:staff_panel' %}" class="text-gray-600 hover:text-brand-700">Dorixona paneli</a>
+          {% endif %}
+          {% if user.is_platform_admin %}
+            <a href="{% url 'pharmacies:admin_dashboard' %}" class="text-gray-600 hover:text-brand-700">Admin panel</a>
+            <a href="{% url 'admin:index' %}" class="text-gray-600 hover:text-brand-700">Django admin</a>
+          {% endif %}
+          <a href="{% url 'accounts:profile' %}" class="text-gray-600 hover:text-brand-700">{{ user.first_name|default:user.username }}</a>
+          <form method="post" action="{% url 'accounts:logout' %}" class="inline">
+            {% csrf_token %}
+            <button class="rounded-lg border border-gray-300 px-3 py-1.5 hover:bg-gray-100">Chiqish</button>
+          </form>
+        {% else %}
+          <a href="{% url 'accounts:login' %}" class="text-gray-600 hover:text-brand-700">Kirish</a>
+          <a href="{% url 'accounts:register' %}" class="rounded-lg bg-brand-600 px-3 py-1.5 text-white hover:bg-brand-700">Ro'yxatdan o'tish</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-5xl w-full px-4 py-6 flex-1">
+    {% if messages %}
+      <div class="mb-4 space-y-2">
+        {% for message in messages %}
+          <div class="rounded-lg px-4 py-3 text-sm {% if message.tags == 'error' %}bg-red-50 text-red-700{% elif message.tags == 'success' %}bg-green-50 text-green-700{% else %}bg-amber-50 text-amber-800{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="border-t border-gray-200 bg-white py-6 text-center text-xs text-gray-400">
+    <p>{{ stats_drug_count }} ta dori · {{ stats_pharmacy_count }} ta dorixona bazada</p>
+    <p class="mt-1"><a href="{% url 'catalog:about' %}" class="hover:text-brand-700">Loyiha haqida</a></p>
+  </footer>
+  {% block extra_body %}{% endblock %}
+</body>
+</html>

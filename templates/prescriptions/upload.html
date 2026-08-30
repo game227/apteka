@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Retsept yuklash — Dori Narxlari{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-2xl space-y-4">
+  <h1 class="text-2xl font-bold text-gray-900">Retsept yuklash</h1>
+  <p class="text-sm text-gray-500">Retsept rasmini yuklang — dori nomlarini avtomatik aniqlab beramiz.</p>
+
+  <form method="post" action="{% url 'prescriptions:scan' %}" enctype="multipart/form-data" id="scan-form">
+    {% csrf_token %}
+    <label class="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-gray-300 bg-white p-10 text-center hover:border-brand-400">
+      <span class="text-3xl">📷</span>
+      <span id="file-label" class="font-medium text-gray-700">Rasm tanlang yoki kamerani oching</span>
+      <input type="file" name="image" accept="image/*" capture="environment" class="hidden" required
+             onchange="document.getElementById('file-label').textContent = this.files[0].name; document.getElementById('submit-btn').classList.remove('hidden')">
+    </label>
+    <button id="submit-btn" type="submit" class="hidden mt-4 w-full rounded-xl bg-brand-600 px-4 py-3 font-medium text-white hover:bg-brand-700">
+      Tahlil qilish
+    </button>
+  </form>
+
+  <a href="{% url 'prescriptions:history' %}" class="block text-center text-sm text-gray-500 hover:text-brand-700">Oldingi skanlarim →</a>
+</div>
+{% endblock %}

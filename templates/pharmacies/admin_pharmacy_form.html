@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Yangi dorixona — Admin panel{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-lg space-y-4">
+  <h1 class="text-2xl font-bold text-gray-900">Yangi dorixona qo'shish</h1>
+  <form method="post" class="grid gap-3 rounded-xl border border-gray-200 bg-white p-4 sm:grid-cols-2">
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="{% if field.name == 'address' %}sm:col-span-2{% endif %}">
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
+        {{ field }}
+        {% for error in field.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
+      </div>
+    {% endfor %}
+    <button class="rounded-lg bg-brand-600 px-4 py-2 font-medium text-white hover:bg-brand-700 sm:col-span-2">Qo'shish</button>
+  </form>
+  <p class="text-xs text-gray-400">Lat/Lng qiymatlarini <a href="https://www.google.com/maps" target="_blank" class="underline">Google Maps</a>'dan (joyni bosing → koordinata nusxalanadi) olishingiz mumkin.</p>
+</div>
+{% endblock %}

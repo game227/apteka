@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Dori qidirish — Dori Narxlari{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-2xl space-y-6">
+  <div class="text-center py-4">
+    <h1 class="text-3xl font-bold text-gray-900">Dori narxlarini solishtiring</h1>
+    <p class="mt-2 text-gray-500">Yaqin atrofdagi dorixonalardan eng arzon narxni toping</p>
+  </div>
+
+  <form method="get" class="flex gap-2">
+    <input
+      type="text" name="q" value="{{ query }}" autofocus
+      placeholder="Dori nomini kiriting... (masalan Amoksiklav)"
+      class="flex-1 rounded-xl border border-gray-300 px-4 py-3 text-base shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200">
+    <button class="rounded-xl bg-brand-600 px-5 py-3 font-medium text-white hover:bg-brand-700">Qidirish</button>
+  </form>
+
+  <a href="{% url 'prescriptions:upload' %}" class="block rounded-xl border border-brand-200 bg-brand-50 px-4 py-3 text-center text-sm font-medium text-brand-700 hover:bg-brand-100">
+    📷 Buning o'rniga retsept rasmini yuklang
+  </a>
+
+  {% if query %}
+    <div>
+      <h2 class="mb-3 text-sm font-medium text-gray-500">"{{ query }}" bo'yicha natijalar</h2>
+      {% if results %}
+        <div class="space-y-3">
+          {% for drug in results %}
+            <a href="{{ drug.get_absolute_url }}" class="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:border-brand-300">
+              <div>
+                <p class="font-semibold text-gray-900">{{ drug.trade_name }}</p>
+                <p class="text-sm text-gray-500">{{ drug.substance.name_inn }}{% if drug.dosage_form %} · {{ drug.dosage_form }} {{ drug.dosage_strength }}{% endif %}</p>
+              </div>
+              <span class="rounded-lg bg-brand-600 px-3 py-2 text-sm font-medium text-white">Narxlar →</span>
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="rounded-xl border border-dashed border-gray-300 p-6 text-center text-gray-400">Hech narsa topilmadi. Boshqa nom bilan urinib ko'ring.</p>
+      {% endif %}
+    </div>
+  {% else %}
+    {% if popular_drugs %}
+      <div>
+        <h2 class="mb-3 text-sm font-medium text-gray-500">Ommabop dorilar</h2>
+        <div class="grid gap-2 sm:grid-cols-2">
+          {% for drug in popular_drugs %}
+            <a href="{{ drug.get_absolute_url }}" class="rounded-lg border border-gray-200 bg-white p-3 hover:border-brand-300">
+              <p class="font-medium text-gray-900">{{ drug.trade_name }}</p>
+              <p class="text-xs text-gray-500">{{ drug.substance.name_inn }}</p>
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    {% if categories %}
+      <div>
+        <h2 class="mb-3 text-sm font-medium text-gray-500">Turkumlar bo'yicha ko'rish</h2>
+        <div class="flex flex-wrap gap-2">
+          {% for cat in categories %}
+            <a href="{{ cat.get_absolute_url }}" class="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm hover:border-brand-300">{{ cat.icon }} {{ cat.name_uz }}</a>
+          {% endfor %}
+          <a href="{% url 'catalog:category_list' %}" class="rounded-full px-3 py-1.5 text-sm text-brand-700 hover:underline">Barchasi →</a>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Loyiha haqida — Dori Narxlari{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-2xl space-y-4">
+  <h1 class="text-2xl font-bold text-gray-900">Loyiha haqida</h1>
+  <p class="text-gray-600">
+    Dori Narxlari — bu retsept rasmidan yoki qidiruv orqali dori nomini aniqlab,
+    bir xil ta'sir moddasiga (INN) ega dorilarni yaqin dorixonalar bo'yicha narx
+    solishtirish va referent narxdan sezilarli oshgan narxlarni belgilash uchun
+    yaratilgan platforma.
+  </p>
+  <div class="rounded-xl border border-gray-200 bg-white p-5 space-y-2">
+    <p class="text-sm text-gray-500"><strong class="text-gray-900">{{ stats_drug_count }}</strong> ta dori bazada</p>
+    <p class="text-sm text-gray-500"><strong class="text-gray-900">{{ stats_pharmacy_count }}</strong> ta dorixona</p>
+  </div>
+  <div class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+    Bu tibbiy maslahat platformasi emas — barcha ma'lumot ma'lumot uchun,
+    dori tanlashda albatta shifokor yoki farmatsevt bilan maslahatlashing.
+  </div>
+</div>
+{% endblock %}
