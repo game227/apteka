@@ -85,11 +85,32 @@
 
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+      .bg-ambient { display: none; }
     }
+
+    /* --- Butun sayt bo'ylab ambient orqa fon --- */
+    .bg-ambient { position: fixed; inset: 0; z-index: -10; overflow: hidden; pointer-events: none; }
+    .bg-ambient .dots {
+      position: absolute; inset: -10%;
+      background-image: radial-gradient(circle, rgb(15 23 42 / .07) 1px, transparent 1px);
+      background-size: 26px 26px;
+      -webkit-mask-image: radial-gradient(ellipse 70% 55% at 50% 0%, black 30%, transparent 100%);
+      mask-image: radial-gradient(ellipse 70% 55% at 50% 0%, black 30%, transparent 100%);
+    }
+    .bg-ambient .orb { position: absolute; border-radius: 9999px; filter: blur(70px); opacity: .35; }
+    .bg-ambient .orb-1 { width: 26rem; height: 26rem; top: -8rem; left: -6rem; background: radial-gradient(circle, #75e0b3, transparent 70%); animation: blob 22s ease-in-out infinite; }
+    .bg-ambient .orb-2 { width: 22rem; height: 22rem; top: 15rem; right: -8rem; background: radial-gradient(circle, #a7d8ff, transparent 70%); animation: blob 26s ease-in-out infinite; animation-delay: -8s; }
+    .bg-ambient .orb-3 { width: 20rem; height: 20rem; bottom: -6rem; left: 20%; background: radial-gradient(circle, #d8c8ff, transparent 70%); animation: blob 30s ease-in-out infinite; animation-delay: -15s; }
   </style>
   {% block extra_head %}{% endblock %}
 </head>
 <body class="min-h-screen bg-ink-50/60 text-ink-800 antialiased flex flex-col">
+  <div class="bg-ambient" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="dots"></div>
+  </div>
 
   <header class="bg-white/85 backdrop-blur-md border-b border-ink-100 sticky top-0 z-30">
     <div class="mx-auto max-w-6xl px-4 sm:px-6">
