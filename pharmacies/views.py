@@ -9,7 +9,7 @@ from django.urls import reverse
 from accounts.decorators import pharmacy_staff_required, platform_admin_required
 from accounts.models import User, UserRole
 from catalog.models import Drug
-from pharmacies.forms import CsvUploadForm, PharmacyForm, PharmacyReviewForm, PriceForm
+from pharmacies.forms import CsvUploadForm, DrugCreateForm, PharmacyForm, PharmacyReviewForm, PriceForm
 from pharmacies.models import Pharmacy, PharmacyInvite
 from pharmacies.services import upsert_price
 
@@ -41,13 +41,33 @@ def pharmacy_detail_view(request, slug):
 def staff_panel_view(request):
     pharmacy = request.user.pharmacy
     prices = pharmacy.prices.select_related("drug", "drug__substance").order_by("drug__trade_name")
+    initial = {}
+    new_drug_id = request.GET.get("new_drug")
+    if new_drug_id:
+        initial["drug"] = new_drug_id
     context = {
         "pharmacy": pharmacy,
         "prices": prices,
-        "price_form": PriceForm(),
+        "price_form": PriceForm(initial=initial),
         "csv_form": CsvUploadForm(),
     }
     return render(request, "pharmacies/staff_panel.html", context)
+
+
+@pharmacy_staff_required
+def staff_drug_create_view(request):
+    """Dorixona xodimi katalogda yo'q dorini qo'shishi uchun (masalan
+    yangi yetkazib berilgan dori). Substance tanlashi shart — yangi
+    substance qo'shish faqat Django admin orqali (markazlashgan nazorat)."""
+    if request.method == "POST":
+        form = DrugCreateForm(request.POST)
+        if form.is_valid():
+            drug = form.save()
+            messages.success(request, f"“{drug.trade_name}” katalogga qo'shildi — endi narx belgilashingiz mumkin.")
+            return redirect(f"{reverse('pharmacies:staff_panel')}?new_drug={drug.id}")
+    else:
+        form = DrugCreateForm()
+    return render(request, "pharmacies/staff_drug_form.html", {"form": form})
 
 
 @pharmacy_staff_required

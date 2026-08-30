@@ -101,19 +101,44 @@
 {% if not has_location %}
 <script>
 function requestLocation() {
-  if (!navigator.geolocation) return;
   const btn = document.getElementById('geo-btn');
+  if (!('geolocation' in navigator)) {
+    showGeoError("Brauzeringiz joylashuvni aniqlashni qo'llab-quvvatlamaydi.");
+    return;
+  }
+  if (window.isSecureContext === false) {
+    showGeoError("Joylashuv faqat xavfsiz (https:// yoki localhost) manzilda ishlaydi.");
+    return;
+  }
   btn.textContent = 'Aniqlanmoqda...';
   btn.classList.add('shimmer');
+  btn.disabled = true;
   navigator.geolocation.getCurrentPosition(function(pos) {
     const url = new URL(window.location.href);
     url.searchParams.set('lat', pos.coords.latitude);
     url.searchParams.set('lng', pos.coords.longitude);
     window.location.href = url.toString();
-  }, function() {
-    btn.textContent = 'Ruxsat berish';
+  }, function(err) {
     btn.classList.remove('shimmer');
-  });
+    btn.disabled = false;
+    btn.textContent = 'Qayta urinish';
+    let msg = "Joylashuvni aniqlab bo'lmadi.";
+    if (err.code === err.PERMISSION_DENIED) msg = "Joylashuvga ruxsat berilmadi — brauzer manzil satridagi qulf belgisidan ruxsat bering.";
+    else if (err.code === err.TIMEOUT) msg = 'Joylashuvni aniqlash vaqti tugadi, qayta urinib ko\'ring.';
+    else if (err.code === err.POSITION_UNAVAILABLE) msg = "Joylashuvni aniqlab bo'lmadi (signal yo'q).";
+    showGeoError(msg);
+  }, { timeout: 10000, maximumAge: 60000 });
+}
+
+function showGeoError(msg) {
+  let el = document.getElementById('geo-error');
+  if (!el) {
+    el = document.createElement('p');
+    el.id = 'geo-error';
+    el.className = 'mt-2 text-xs text-red-600 flex items-center gap-1';
+    document.getElementById('geo-prompt').insertAdjacentElement('afterend', el);
+  }
+  el.textContent = msg;
 }
 </script>
 {% endif %}
