@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load ui_extras %}
+{% block title %}Sahifa topilmadi — Dori Narxlari{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-md text-center py-16 animate-fade-up">
+  <span class="inline-grid place-items-center w-16 h-16 rounded-2xl bg-ink-100 text-ink-400 mb-4">{% icon 'search' 'w-7 h-7' %}</span>
+  <h1 class="text-3xl font-extrabold text-ink-900 font-display">404</h1>
+  <p class="mt-2 text-ink-500">Bu sahifa topilmadi yoki ko'chirilgan.</p>
+  <a href="{% url 'catalog:home' %}" class="mt-6 inline-flex items-center gap-1.5 rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 transition-colors">Bosh sahifaga qaytish</a>
+</div>
+{% endblock %}

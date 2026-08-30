@@ -1,70 +1,80 @@
 {% extends "base.html" %}
+{% load ui_extras %}
 {% block title %}Admin panel — Dori Narxlari{% endblock %}
 {% block content %}
 <div class="space-y-8">
-  <div class="flex items-center justify-between">
-    <h1 class="text-2xl font-bold text-gray-900">Admin panel</h1>
-    <a href="{% url 'pharmacies:admin_pharmacy_create' %}" class="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700">+ Dorixona qo'shish</a>
+  <div class="animate-fade-up flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-2xl font-bold text-ink-900 font-display">Admin panel</h1>
+      <p class="text-sm text-ink-500 mt-0.5">Dorixonalar va platforma boshqaruvi</p>
+    </div>
+    <a href="{% url 'pharmacies:admin_pharmacy_create' %}" class="flex items-center gap-1.5 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-card hover:bg-brand-700 hover:shadow-card-hover active:scale-[0.98] transition-all">{% icon 'plus' 'w-4 h-4' %}Dorixona qo'shish</a>
   </div>
 
-  <div class="grid gap-3 sm:grid-cols-3">
-    <div class="rounded-xl border border-gray-200 bg-white p-4 text-center">
-      <p class="text-2xl font-bold text-gray-900">{{ stats.pharmacy_count }}</p>
-      <p class="text-xs text-gray-500">dorixona</p>
+  <div class="grid gap-3 sm:grid-cols-3 stagger">
+    <div style="--i:0" class="hover-lift rounded-2xl border border-ink-100 bg-white p-5 text-center shadow-card">
+      <span class="inline-grid place-items-center w-10 h-10 rounded-xl bg-brand-50 text-brand-600 mb-2">{% icon 'building' 'w-5 h-5' %}</span>
+      <p class="text-2xl font-extrabold text-ink-900 font-display">{{ stats.pharmacy_count }}</p>
+      <p class="text-xs text-ink-500">dorixona</p>
     </div>
-    <div class="rounded-xl border border-gray-200 bg-white p-4 text-center">
-      <p class="text-2xl font-bold text-gray-900">{{ stats.drug_count }}</p>
-      <p class="text-xs text-gray-500">dori</p>
+    <div style="--i:1" class="hover-lift rounded-2xl border border-ink-100 bg-white p-5 text-center shadow-card">
+      <span class="inline-grid place-items-center w-10 h-10 rounded-xl bg-brand-50 text-brand-600 mb-2">{% icon 'pill' 'w-5 h-5' %}</span>
+      <p class="text-2xl font-extrabold text-ink-900 font-display">{{ stats.drug_count }}</p>
+      <p class="text-xs text-ink-500">dori</p>
     </div>
-    <div class="rounded-xl border border-gray-200 bg-white p-4 text-center">
-      <p class="text-2xl font-bold text-gray-900">{{ stats.staff_count }}</p>
-      <p class="text-xs text-gray-500">dorixona xodimi</p>
+    <div style="--i:2" class="hover-lift rounded-2xl border border-ink-100 bg-white p-5 text-center shadow-card">
+      <span class="inline-grid place-items-center w-10 h-10 rounded-xl bg-brand-50 text-brand-600 mb-2">{% icon 'user' 'w-5 h-5' %}</span>
+      <p class="text-2xl font-extrabold text-ink-900 font-display">{{ stats.staff_count }}</p>
+      <p class="text-xs text-ink-500">dorixona xodimi</p>
     </div>
   </div>
 
-  <div>
-    <h2 class="mb-3 text-lg font-semibold text-gray-900">Dorixonalar</h2>
-    <div class="space-y-2">
+  <div class="animate-fade-up" style="animation-delay:.1s">
+    <h2 class="mb-3 text-sm font-semibold text-ink-500 uppercase tracking-wide">Dorixonalar</h2>
+    <div class="space-y-2.5 stagger">
       {% for pharmacy in pharmacies %}
-        <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white p-4">
-          <div>
-            <a href="{{ pharmacy.get_absolute_url }}" class="font-semibold text-gray-900 hover:text-brand-700">{{ pharmacy.name }}</a>
-            <p class="text-sm text-gray-500">{{ pharmacy.address }}</p>
+        <div style="--i:{{ forloop.counter0 }}" class="hover-lift flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-ink-100 bg-white p-4 shadow-card">
+          <div class="flex items-center gap-3 min-w-0">
+            <span class="grid place-items-center w-10 h-10 rounded-lg bg-ink-50 text-ink-400 shrink-0">{% icon 'building' 'w-4.5 h-4.5' %}</span>
+            <div class="min-w-0">
+              <a href="{{ pharmacy.get_absolute_url }}" class="font-semibold text-ink-900 hover:text-brand-700 transition-colors">{{ pharmacy.name }}</a>
+              <p class="text-sm text-ink-500 truncate">{{ pharmacy.address }}</p>
+            </div>
           </div>
           <form method="post" action="{% url 'pharmacies:admin_invite_create' pharmacy.id %}">
             {% csrf_token %}
-            <button class="rounded-lg border border-brand-600 px-3 py-1.5 text-sm font-medium text-brand-700 hover:bg-brand-50">Taklif havolasi yaratish</button>
+            <button class="flex items-center gap-1.5 rounded-lg border border-brand-200 px-3 py-1.5 text-sm font-medium text-brand-700 hover:bg-brand-50 active:scale-95 transition-all">{% icon 'link' 'w-3.5 h-3.5' %}Taklif havolasi</button>
           </form>
         </div>
       {% empty %}
-        <p class="text-gray-400">Hali dorixona qo'shilmagan.</p>
+        <p class="text-ink-400 text-center py-10 rounded-2xl border-2 border-dashed border-ink-200">Hali dorixona qo'shilmagan.</p>
       {% endfor %}
     </div>
   </div>
 
-  <div>
-    <h2 class="mb-3 text-lg font-semibold text-gray-900">So'nggi takliflar</h2>
+  <div class="animate-fade-up" style="animation-delay:.15s">
+    <h2 class="mb-3 text-sm font-semibold text-ink-500 uppercase tracking-wide">So'nggi takliflar</h2>
     <div class="space-y-2 text-sm">
       {% for invite in invites %}
-        <div class="rounded-lg border border-gray-100 bg-white p-3 flex items-center justify-between">
-          <span>{{ invite.pharmacy.name }} — <code class="text-xs">{{ invite.token|slice:":16" }}…</code></span>
+        <div class="flex items-center justify-between rounded-xl border border-ink-100 bg-white p-3.5 shadow-card">
+          <span class="flex items-center gap-2 text-ink-700"><span class="text-ink-400">{% icon 'link' 'w-4 h-4' %}</span>{{ invite.pharmacy.name }} — <code class="text-xs bg-ink-50 px-1.5 py-0.5 rounded">{{ invite.token|slice:":16" }}…</code></span>
           {% if invite.used_by %}
-            <span class="text-green-700">✓ {{ invite.used_by }}</span>
+            <span class="flex items-center gap-1 text-brand-700 font-medium text-xs bg-brand-50 rounded-full px-2.5 py-1">{% icon 'check-circle' 'w-3.5 h-3.5' %}{{ invite.used_by }}</span>
           {% elif invite.is_valid %}
-            <span class="text-amber-700">kutilmoqda</span>
+            <span class="text-amber-700 font-medium text-xs bg-amber-50 rounded-full px-2.5 py-1">kutilmoqda</span>
           {% else %}
-            <span class="text-gray-400">muddati o'tgan</span>
+            <span class="text-ink-400 text-xs bg-ink-50 rounded-full px-2.5 py-1">muddati o'tgan</span>
           {% endif %}
         </div>
       {% empty %}
-        <p class="text-gray-400">Hali taklif yaratilmagan.</p>
+        <p class="text-ink-400 text-center py-6">Hali taklif yaratilmagan.</p>
       {% endfor %}
     </div>
   </div>
 
-  <p class="text-sm text-gray-400">
-    Dori/turkum/alias qo'shish va batafsil boshqaruv uchun:
-    <a href="{% url 'admin:index' %}" class="text-brand-700 hover:underline">Django admin panel</a>
+  <p class="animate-fade-up text-sm text-ink-400 flex items-center gap-1.5" style="animation-delay:.2s">
+    {% icon 'shield' 'w-4 h-4' %} Dori/turkum/alias qo'shish va batafsil boshqaruv uchun:
+    <a href="{% url 'admin:index' %}" class="text-brand-700 font-medium hover:underline">Django admin panel</a>
   </p>
 </div>
 {% endblock %}

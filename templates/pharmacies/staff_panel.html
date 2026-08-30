@@ -1,53 +1,57 @@
 {% extends "base.html" %}
+{% load ui_extras %}
 {% block title %}Dorixona paneli — {{ pharmacy.name }}{% endblock %}
 {% block content %}
 <div class="space-y-6">
-  <div>
-    <h1 class="text-2xl font-bold text-gray-900">{{ pharmacy.name }}</h1>
-    <p class="text-sm text-gray-500">{{ pharmacy.address }}</p>
+  <div class="animate-fade-up flex items-center gap-3">
+    <span class="grid place-items-center w-12 h-12 rounded-xl bg-brand-50 text-brand-600 shrink-0">{% icon 'building' 'w-6 h-6' %}</span>
+    <div>
+      <h1 class="text-xl font-bold text-ink-900 font-display">{{ pharmacy.name }}</h1>
+      <p class="text-sm text-ink-500 flex items-center gap-1">{% icon 'map-pin' 'w-3.5 h-3.5' %}{{ pharmacy.address }}</p>
+    </div>
   </div>
 
   <div class="grid gap-4 sm:grid-cols-2">
-    <form method="post" action="{% url 'pharmacies:staff_price_update' %}" class="space-y-2 rounded-xl border border-gray-200 bg-white p-4">
+    <form method="post" action="{% url 'pharmacies:staff_price_update' %}" class="animate-fade-up space-y-3 rounded-2xl border border-ink-100 bg-white p-5 shadow-card" style="animation-delay:.05s">
       {% csrf_token %}
-      <h2 class="font-semibold text-gray-900">Narx qo'shish / yangilash</h2>
+      <h2 class="font-semibold text-ink-900 flex items-center gap-2">{% icon 'plus' 'w-4.5 h-4.5 text-brand-600' %} Narx qo'shish / yangilash</h2>
       {% for field in price_form %}
         <div>
-          {% if field.name != 'in_stock' %}<label class="block text-xs font-medium text-gray-600 mb-1">{{ field.label }}</label>{% endif %}
+          {% if field.name != 'in_stock' %}<label class="block text-xs font-medium text-ink-600 mb-1">{{ field.label }}</label>{% endif %}
           {% if field.name == 'in_stock' %}
-            <label class="flex items-center gap-2 text-sm">{{ field }} Mavjud</label>
+            <label class="flex items-center gap-2 text-sm text-ink-700">{{ field }} Mavjud</label>
           {% else %}
             {{ field }}
           {% endif %}
         </div>
       {% endfor %}
-      <button class="w-full rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700">Saqlash</button>
+      <button class="w-full rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 active:scale-[0.98] transition-all">Saqlash</button>
     </form>
 
-    <form method="post" action="{% url 'pharmacies:staff_csv_upload' %}" enctype="multipart/form-data" class="space-y-2 rounded-xl border border-gray-200 bg-white p-4">
+    <form method="post" action="{% url 'pharmacies:staff_csv_upload' %}" enctype="multipart/form-data" class="animate-fade-up space-y-3 rounded-2xl border border-ink-100 bg-white p-5 shadow-card" style="animation-delay:.1s">
       {% csrf_token %}
-      <h2 class="font-semibold text-gray-900">CSV orqali ko'plab narx yuklash</h2>
-      <p class="text-xs text-gray-400">Ustunlar: <code>drug_id</code> yoki <code>trade_name</code>, <code>price</code>, <code>in_stock</code></p>
+      <h2 class="font-semibold text-ink-900 flex items-center gap-2">{% icon 'upload' 'w-4.5 h-4.5 text-brand-600' %} CSV orqali ko'plab narx yuklash</h2>
+      <p class="text-xs text-ink-400">Ustunlar: <code class="bg-ink-50 px-1 py-0.5 rounded">drug_id</code> yoki <code class="bg-ink-50 px-1 py-0.5 rounded">trade_name</code>, <code class="bg-ink-50 px-1 py-0.5 rounded">price</code>, <code class="bg-ink-50 px-1 py-0.5 rounded">in_stock</code></p>
       {{ csv_form.file }}
-      <button class="w-full rounded-lg bg-gray-800 px-4 py-2 text-sm font-medium text-white hover:bg-gray-900">Yuklash</button>
+      <button class="w-full rounded-xl bg-ink-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-ink-800 active:scale-[0.98] transition-all">Yuklash</button>
     </form>
   </div>
 
-  <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+  <div class="animate-fade-up overflow-x-auto rounded-2xl border border-ink-100 bg-white shadow-card" style="animation-delay:.15s">
     <table class="w-full text-sm">
-      <thead class="bg-gray-50 text-left text-gray-500">
-        <tr><th class="px-4 py-2">Dori</th><th class="px-4 py-2">Narx</th><th class="px-4 py-2">Mavjudligi</th><th class="px-4 py-2">Yangilangan</th></tr>
+      <thead class="bg-ink-50/70 text-left text-ink-500">
+        <tr><th class="px-4 py-3 font-medium">Dori</th><th class="px-4 py-3 font-medium">Narx</th><th class="px-4 py-3 font-medium">Mavjudligi</th><th class="px-4 py-3 font-medium">Yangilangan</th></tr>
       </thead>
-      <tbody class="divide-y divide-gray-100">
+      <tbody class="divide-y divide-ink-50">
         {% for row in prices %}
-          <tr>
-            <td class="px-4 py-2 font-medium text-gray-900">{{ row.drug.trade_name }}</td>
-            <td class="px-4 py-2">{{ row.price|floatformat:0 }} so'm</td>
-            <td class="px-4 py-2">{% if row.in_stock %}Bor{% else %}Yo'q{% endif %}</td>
-            <td class="px-4 py-2 text-gray-400">{{ row.updated_at|date:"d.m.Y H:i" }}</td>
+          <tr class="hover:bg-ink-50/50 transition-colors">
+            <td class="px-4 py-3 font-medium text-ink-900">{{ row.drug.trade_name }}</td>
+            <td class="px-4 py-3 text-ink-700">{{ row.price|floatformat:0 }} so'm</td>
+            <td class="px-4 py-3">{% if row.in_stock %}<span class="text-brand-700 text-xs font-medium bg-brand-50 rounded-full px-2 py-0.5">Bor</span>{% else %}<span class="text-ink-400 text-xs">Yo'q</span>{% endif %}</td>
+            <td class="px-4 py-3 text-ink-400 text-xs">{{ row.updated_at|date:"d.m.Y H:i" }}</td>
           </tr>
         {% empty %}
-          <tr><td colspan="4" class="px-4 py-6 text-center text-gray-400">Hali narx kiritilmagan.</td></tr>
+          <tr><td colspan="4" class="px-4 py-10 text-center text-ink-400">Hali narx kiritilmagan.</td></tr>
         {% endfor %}
       </tbody>
     </table>
