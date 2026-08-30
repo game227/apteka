@@ -1,5 +1,5 @@
 import { request } from './api'
-import type { DrugAlternative, DrugPricesResponse, DrugSearchResult } from '../types/api'
+import type { DrugAlternativesResponse, DrugPricesResponse, DrugSearchResult } from '../types/api'
 
 export function searchDrugs(query: string) {
   return request<DrugSearchResult[]>('/drugs/search', { query: { q: query } })
@@ -12,5 +12,5 @@ export function fetchDrugPrices(drugId: number, coords?: { lat: number; lng: num
 }
 
 export function fetchDrugAlternatives(drugId: number) {
-  return request<DrugAlternative[]>(`/drugs/${drugId}/alternatives`)
+  return request<DrugAlternativesResponse>(`/drugs/${drugId}/alternatives`)
 }

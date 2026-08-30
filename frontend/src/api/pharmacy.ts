@@ -1,16 +1,16 @@
 import { request } from './api'
-import type { CsvUploadResult, Pharmacy, PharmacyMyPriceRow } from '../types/api'
+import type { CsvUploadResult, Pharmacy, PharmacyPriceOut } from '../types/api'
 
 export function fetchMyPharmacy() {
   return request<Pharmacy>('/pharmacy/my')
 }
 
 export function fetchMyPharmacyPrices() {
-  return request<PharmacyMyPriceRow[]>('/pharmacy/my/prices')
+  return request<PharmacyPriceOut[]>('/pharmacy/my/prices')
 }
 
 export function upsertMyPrice(input: { drug_id: number; price: number; in_stock: boolean }) {
-  return request<PharmacyMyPriceRow>('/pharmacy/my/prices', { method: 'POST', body: input })
+  return request<PharmacyPriceOut>('/pharmacy/my/prices', { method: 'POST', body: input })
 }
 
 export function uploadPricesCsv(file: File) {

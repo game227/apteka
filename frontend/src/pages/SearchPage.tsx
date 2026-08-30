@@ -58,7 +58,7 @@ export function SearchPage() {
             <div>
               <p className="font-semibold text-gray-900">{drug.trade_name}</p>
               <p className="text-sm text-gray-500">
-                {drug.substance_name} · {drug.dosage_form} {drug.dosage_strength}
+                {drug.substance_name_inn} · {drug.dosage_form} {drug.dosage_strength}
               </p>
             </div>
             <button

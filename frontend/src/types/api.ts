@@ -11,84 +11,93 @@ export interface User {
 
 export interface TelegramAuthPayload {
   id: number
-  first_name: string
-  last_name?: string
-  username?: string
-  photo_url?: string
+  first_name?: string | null
+  last_name?: string | null
+  username?: string | null
+  photo_url?: string | null
   auth_date: number
   hash: string
+  invite_token?: string | null
 }
 
-export interface AuthResponse {
-  token: string
-  user: User
+export interface TokenResponse {
+  access_token: string
+  token_type: string
 }
 
 export interface DrugSearchResult {
   id: number
   trade_name: string
-  substance_name: string
-  manufacturer: string
-  dosage_form: string
-  dosage_strength: string
+  manufacturer: string | null
+  dosage_form: string | null
+  dosage_strength: string | null
+  substance_id: number
+  substance_name_inn: string
+  reference_price: number | null
 }
 
-export interface PharmacyPriceEntry {
+export interface DrugPriceEntry {
   pharmacy_id: number
   pharmacy_name: string
-  address: string
-  lat: number
-  lng: number
+  pharmacy_address: string
   distance_km: number | null
   price: number
   in_stock: boolean
   reference_price: number | null
-  deviation_percent: number | null
+  deviation_pct: number | null
   is_overpriced: boolean
   updated_at: string
 }
 
 export interface DrugPricesResponse {
-  drug: {
-    id: number
-    trade_name: string
-    substance_name: string
-  }
-  prices: PharmacyPriceEntry[]
-  disclaimer: string
+  drug: DrugSearchResult
+  prices: DrugPriceEntry[]
 }
 
 export interface DrugAlternative {
-  drug_id: number
+  id: number
   trade_name: string
-  manufacturer: string
-  min_price: number | null
+  manufacturer: string | null
+  dosage_form: string | null
+  dosage_strength: string | null
   reference_price: number | null
 }
 
-export type ConfidenceLevel = 'high' | 'medium' | 'low'
+export interface DrugAlternativesResponse {
+  substance_id: number
+  substance_name_inn: string
+  alternatives: DrugAlternative[]
+  warning?: string
+}
 
-export interface PrescriptionScanItem {
+export type PrescriptionItemStatus = 'matched' | 'needs_confirmation' | 'not_found'
+
+export interface MatchCandidate {
+  drug_id: number
+  trade_name: string
+  score: number
+}
+
+export interface DetectedDrugItem {
   raw_text: string
   matched_drug_id: number | null
   matched_trade_name: string | null
-  confidence: ConfidenceLevel
-  confidence_score: number
+  confidence: number
+  status: PrescriptionItemStatus
+  candidates: MatchCandidate[]
 }
 
 export interface PrescriptionScanResponse {
-  items: PrescriptionScanItem[]
+  items: DetectedDrugItem[]
 }
 
-export interface PrescriptionConfirmItemResult {
+export interface ConfirmedDrugItem {
   drug_id: number
-  trade_name: string
-  prices: PharmacyPriceEntry[]
+  raw_text?: string | null
 }
 
 export interface PrescriptionConfirmResponse {
-  disclaimer: string
-  results: PrescriptionConfirmItemResult[]
+  results: DrugPricesResponse[]
 }
 
 export interface Pharmacy {
@@ -97,11 +106,11 @@ export interface Pharmacy {
   address: string
   lat: number
   lng: number
-  phone: string
-  staff_count?: number
+  phone: string | null
+  created_at: string
 }
 
-export interface PharmacyMyPriceRow {
+export interface PharmacyPriceOut {
   drug_id: number
   trade_name: string
   price: number
@@ -109,18 +118,19 @@ export interface PharmacyMyPriceRow {
   updated_at: string
 }
 
-export interface CsvUploadError {
-  row: number
-  reason: string
+export interface CsvRowError {
+  row_number: number
+  raw: Record<string, unknown>
+  error: string
 }
 
 export interface CsvUploadResult {
-  success_count: number
-  error_count: number
-  errors: CsvUploadError[]
+  imported: number
+  errors: CsvRowError[]
 }
 
 export interface PharmacyInviteResponse {
   token: string
-  url: string
+  pharmacy_id: number
+  expires_at: string
 }

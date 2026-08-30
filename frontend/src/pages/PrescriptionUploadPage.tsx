@@ -2,13 +2,14 @@ import { useState, type ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { confirmPrescription, scanPrescription } from '../api/prescriptions'
 import { searchDrugs } from '../api/drugs'
+import { useGeolocation } from '../hooks/useGeolocation'
 import { ConfidenceTag } from '../components/ConfidenceTag'
 import { Disclaimer } from '../components/Disclaimer'
 import { PriceBadge } from '../components/PriceBadge'
 import { ApiError } from '../api/apiError'
-import type { DrugSearchResult, PrescriptionConfirmResponse, PrescriptionScanItem } from '../types/api'
+import type { DetectedDrugItem, DrugSearchResult, PrescriptionConfirmResponse } from '../types/api'
 
-interface ResolvedItem extends PrescriptionScanItem {
+interface ResolvedItem extends DetectedDrugItem {
   resolvedDrugId: number | null
   resolvedName: string | null
 }
@@ -56,7 +57,7 @@ function ManualPicker({ onSelect }: { onSelect: (drug: DrugSearchResult) => void
                 }}
                 className="block w-full px-3 py-2 text-left text-sm hover:bg-gray-50"
               >
-                {option.trade_name} · {option.substance_name}
+                {option.trade_name} · {option.substance_name_inn}
               </button>
             </li>
           ))}
@@ -72,6 +73,7 @@ export function PrescriptionUploadPage() {
   const [error, setError] = useState<string | null>(null)
   const [confirmResult, setConfirmResult] = useState<PrescriptionConfirmResponse | null>(null)
   const navigate = useNavigate()
+  const { coords } = useGeolocation()
 
   async function handleFile(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -94,21 +96,21 @@ export function PrescriptionUploadPage() {
     }
   }
 
-  function updateItem(index: number, drug: DrugSearchResult) {
+  function updateItem(index: number, drugId: number, drugName: string) {
     setItems((prev) =>
-      prev.map((item, i) =>
-        i === index ? { ...item, resolvedDrugId: drug.id, resolvedName: drug.trade_name } : item,
-      ),
+      prev.map((item, i) => (i === index ? { ...item, resolvedDrugId: drugId, resolvedName: drugName } : item)),
     )
   }
 
   async function handleConfirm() {
-    const drugIds = items.map((item) => item.resolvedDrugId).filter((id): id is number => id !== null)
-    if (drugIds.length === 0) return
+    const confirmedItems = items
+      .filter((item) => item.resolvedDrugId !== null)
+      .map((item) => ({ drug_id: item.resolvedDrugId!, raw_text: item.raw_text }))
+    if (confirmedItems.length === 0) return
     setStatus('confirming')
     setError(null)
     try {
-      const result = await confirmPrescription(drugIds)
+      const result = await confirmPrescription(confirmedItems, coords)
       setConfirmResult(result)
       setStatus('done')
     } catch (err) {
@@ -154,15 +156,35 @@ export function PrescriptionUploadPage() {
             <div key={index} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
               <div className="flex items-center justify-between">
                 <p className="font-medium text-gray-900">{item.raw_text}</p>
-                <ConfidenceTag level={item.confidence} />
+                <ConfidenceTag status={item.status} />
               </div>
               {item.resolvedDrugId !== null ? (
                 <p className="mt-1 text-sm text-teal-700">→ {item.resolvedName}</p>
               ) : (
                 <p className="mt-1 text-sm text-red-600">Mos dori topilmadi — qo'lda tanlang</p>
               )}
-              {(item.confidence !== 'high' || item.resolvedDrugId === null) && (
-                <ManualPicker onSelect={(drug) => updateItem(index, drug)} />
+
+              {item.status !== 'matched' && item.candidates.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {item.candidates.map((candidate) => (
+                    <button
+                      key={candidate.drug_id}
+                      type="button"
+                      onClick={() => updateItem(index, candidate.drug_id, candidate.trade_name)}
+                      className={`rounded-lg border px-2.5 py-1 text-xs ${
+                        item.resolvedDrugId === candidate.drug_id
+                          ? 'border-teal-500 bg-teal-50 text-teal-700'
+                          : 'border-gray-200 text-gray-600 hover:border-teal-300'
+                      }`}
+                    >
+                      {candidate.trade_name} ({Math.round(candidate.score)}%)
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {item.status !== 'matched' && (
+                <ManualPicker onSelect={(drug) => updateItem(index, drug.id, drug.trade_name)} />
               )}
             </div>
           ))}
@@ -184,8 +206,8 @@ export function PrescriptionUploadPage() {
         <div className="space-y-6">
           <Disclaimer />
           {confirmResult.results.map((result) => (
-            <div key={result.drug_id}>
-              <h2 className="mb-2 text-lg font-semibold text-gray-900">{result.trade_name}</h2>
+            <div key={result.drug.id}>
+              <h2 className="mb-2 text-lg font-semibold text-gray-900">{result.drug.trade_name}</h2>
               <div className="space-y-2">
                 {result.prices.map((row) => (
                   <div
@@ -194,9 +216,9 @@ export function PrescriptionUploadPage() {
                   >
                     <div>
                       <p className="font-medium text-gray-900">{row.pharmacy_name}</p>
-                      <p className="text-xs text-gray-500">{row.address}</p>
+                      <p className="text-xs text-gray-500">{row.pharmacy_address}</p>
                     </div>
-                    <PriceBadge price={row.price} deviationPercent={row.deviation_percent} isOverpriced={row.is_overpriced} />
+                    <PriceBadge price={row.price} deviationPct={row.deviation_pct} isOverpriced={row.is_overpriced} />
                   </div>
                 ))}
               </div>

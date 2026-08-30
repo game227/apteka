@@ -52,13 +52,15 @@ export const drugs: MockDrug[] = [
   { id: 14, trade_name: 'Azimed 500mg', substance_id: 7, manufacturer: 'Nobel', dosage_form: 'tabletka', dosage_strength: '500mg', reference_price: 36000, aliases: ['азимед'] },
 ]
 
+const SEED_CREATED_AT = '2026-01-01T00:00:00+05:00'
+
 export const pharmacies: Pharmacy[] = [
-  { id: 1, name: "Oq Ipak Dorixona", address: "Chilonzor tumani, Bunyodkor shoh ko'chasi 12", lat: 41.2856, lng: 69.2034, phone: '+998 71 200 10 10' },
-  { id: 2, name: "Sog'lom Hayot", address: 'Yunusobod tumani, Amir Temur ko\'chasi 45', lat: 41.3399, lng: 69.2879, phone: '+998 71 200 20 20' },
-  { id: 3, name: 'Shifo Dorixonasi', address: "Mirzo Ulug'bek tumani, Buyuk Ipak Yo'li 5", lat: 41.3275, lng: 69.3193, phone: '+998 71 200 30 30' },
-  { id: 4, name: 'Salomatlik Plus', address: "Sergeli tumani, Qatortol ko'chasi 78", lat: 41.2273, lng: 69.2308, phone: '+998 71 200 40 40' },
-  { id: 5, name: 'Doristor', address: "Yakkasaroy tumani, Shota Rustaveli ko'chasi 3", lat: 41.2996, lng: 69.2626, phone: '+998 71 200 50 50' },
-  { id: 6, name: 'Apteka №1', address: "Mirobod tumani, Nukus ko'chasi 21", lat: 41.3006, lng: 69.2879, phone: '+998 71 200 60 60' },
+  { id: 1, name: "Oq Ipak Dorixona", address: "Chilonzor tumani, Bunyodkor shoh ko'chasi 12", lat: 41.2856, lng: 69.2034, phone: '+998 71 200 10 10', created_at: SEED_CREATED_AT },
+  { id: 2, name: "Sog'lom Hayot", address: 'Yunusobod tumani, Amir Temur ko\'chasi 45', lat: 41.3399, lng: 69.2879, phone: '+998 71 200 20 20', created_at: SEED_CREATED_AT },
+  { id: 3, name: 'Shifo Dorixonasi', address: "Mirzo Ulug'bek tumani, Buyuk Ipak Yo'li 5", lat: 41.3275, lng: 69.3193, phone: '+998 71 200 30 30', created_at: SEED_CREATED_AT },
+  { id: 4, name: 'Salomatlik Plus', address: "Sergeli tumani, Qatortol ko'chasi 78", lat: 41.2273, lng: 69.2308, phone: '+998 71 200 40 40', created_at: SEED_CREATED_AT },
+  { id: 5, name: 'Doristor', address: "Yakkasaroy tumani, Shota Rustaveli ko'chasi 3", lat: 41.2996, lng: 69.2626, phone: '+998 71 200 50 50', created_at: SEED_CREATED_AT },
+  { id: 6, name: 'Apteka №1', address: "Mirobod tumani, Nukus ko'chasi 21", lat: 41.3006, lng: 69.2879, phone: '+998 71 200 60 60', created_at: SEED_CREATED_AT },
 ]
 
 function seededRandom(seed: number) {

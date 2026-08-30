@@ -17,7 +17,7 @@ function App() {
         <Layout>
           <Routes>
             <Route path="/" element={<SearchPage />} />
-            <Route path="/dorilar/:drugId" element={<DrugPricesPage />} />
+            <Route path="/dori/:drugId" element={<DrugPricesPage />} />
             <Route path="/retsept" element={<PrescriptionUploadPage />} />
             <Route path="/kirish" element={<LoginPage />} />
             <Route

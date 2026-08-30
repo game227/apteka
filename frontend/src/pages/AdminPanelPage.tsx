@@ -53,7 +53,8 @@ export function AdminPanelPage() {
   async function handleInvite(pharmacyId: number) {
     try {
       const res = await createPharmacyInvite(pharmacyId)
-      setInvites((prev) => ({ ...prev, [pharmacyId]: res.url }))
+      const url = `${window.location.origin}/kirish?invite=${res.token}`
+      setInvites((prev) => ({ ...prev, [pharmacyId]: url }))
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Havola yaratishda xatolik yuz berdi.')
     }
@@ -131,7 +132,6 @@ export function AdminPanelPage() {
                 <div>
                   <p className="font-semibold text-gray-900">{pharmacy.name}</p>
                   <p className="text-sm text-gray-500">{pharmacy.address}</p>
-                  <p className="text-xs text-gray-400">Xodimlar: {pharmacy.staff_count ?? 0}</p>
                 </div>
                 <button
                   type="button"

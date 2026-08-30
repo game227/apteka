@@ -8,7 +8,7 @@ interface AuthContextValue {
   user: User | null
   isLoading: boolean
   error: string | null
-  loginWithTelegram: (payload: TelegramAuthPayload) => Promise<void>
+  loginWithTelegram: (payload: TelegramAuthPayload, inviteToken?: string | null) => Promise<void>
   logout: () => void
 }
 
@@ -31,13 +31,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .finally(() => setIsLoading(false))
   }, [])
 
-  async function loginWithTelegram(payload: TelegramAuthPayload) {
+  async function loginWithTelegram(payload: TelegramAuthPayload, inviteToken?: string | null) {
     setError(null)
     try {
-      const res = await apiLoginWithTelegram(payload)
-      setToken(res.token)
-      setUser(res.user)
+      const res = await apiLoginWithTelegram({ ...payload, invite_token: inviteToken ?? null })
+      setToken(res.access_token)
+      const me = await fetchMe()
+      setUser(me)
     } catch (err) {
+      setToken(null)
       setError(err instanceof ApiError ? err.message : 'Kirishda xatolik yuz berdi.')
       throw err
     }

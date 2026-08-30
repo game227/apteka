@@ -1,11 +1,13 @@
 import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { TelegramLoginButton } from '../components/TelegramLoginButton'
 import { useAuth } from '../context/AuthContext'
 
 export function LoginPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const inviteToken = searchParams.get('invite')
 
   useEffect(() => {
     if (user) navigate('/', { replace: true })
@@ -17,7 +19,12 @@ export function LoginPage() {
       <p className="text-sm text-gray-500">
         Narx tarixini ko'rish, dorixona yoki admin panelga kirish uchun Telegram orqali tizimga kiring.
       </p>
-      <TelegramLoginButton />
+      {inviteToken && (
+        <p className="rounded-lg bg-teal-50 p-3 text-sm text-teal-700">
+          Dorixona xodimi sifatida taklif havolasi orqali kirmoqdasiz.
+        </p>
+      )}
+      <TelegramLoginButton inviteToken={inviteToken} />
     </div>
   )
 }

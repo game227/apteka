@@ -1,11 +1,11 @@
 import { useEffect, useState, type ChangeEvent } from 'react'
 import { fetchMyPharmacy, fetchMyPharmacyPrices, upsertMyPrice, uploadPricesCsv } from '../api/pharmacy'
 import { ApiError } from '../api/apiError'
-import type { CsvUploadResult, Pharmacy, PharmacyMyPriceRow } from '../types/api'
+import type { CsvUploadResult, Pharmacy, PharmacyPriceOut } from '../types/api'
 
 export function PharmacyPanelPage() {
   const [pharmacy, setPharmacy] = useState<Pharmacy | null>(null)
-  const [rows, setRows] = useState<PharmacyMyPriceRow[]>([])
+  const [rows, setRows] = useState<PharmacyPriceOut[]>([])
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [editingId, setEditingId] = useState<number | null>(null)
@@ -32,7 +32,7 @@ export function PharmacyPanelPage() {
     }
   }
 
-  function startEdit(row: PharmacyMyPriceRow) {
+  function startEdit(row: PharmacyPriceOut) {
     setEditingId(row.drug_id)
     setEditPrice(String(row.price))
     setEditInStock(row.in_stock)
@@ -88,13 +88,13 @@ export function PharmacyPanelPage() {
       {csvResult && (
         <div className="rounded-xl border border-gray-200 bg-white p-4">
           <p className="font-medium text-gray-900">
-            {csvResult.success_count} ta qator muvaffaqiyatli, {csvResult.error_count} ta xato
+            {csvResult.imported} ta qator muvaffaqiyatli, {csvResult.errors.length} ta xato
           </p>
           {csvResult.errors.length > 0 && (
             <ul className="mt-2 space-y-1 text-sm text-red-700">
               {csvResult.errors.map((err) => (
-                <li key={err.row}>
-                  {err.row}-qator: {err.reason}
+                <li key={err.row_number}>
+                  {err.row_number}-qator: {err.error}
                 </li>
               ))}
             </ul>

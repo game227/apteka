@@ -17,7 +17,7 @@ const MOCK_ACCOUNTS: { label: string; payload: TelegramAuthPayload }[] = [
   { label: 'Admin sifatida', payload: { id: 333, first_name: 'Admin', username: 'apteka_admin', auth_date: Math.floor(Date.now() / 1000), hash: 'mock' } },
 ]
 
-export function TelegramLoginButton() {
+export function TelegramLoginButton({ inviteToken }: { inviteToken?: string | null }) {
   const { loginWithTelegram } = useAuth()
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -25,7 +25,7 @@ export function TelegramLoginButton() {
     if (USE_MOCK || !BOT_USERNAME) return
 
     window.onTelegramAuth = (user) => {
-      loginWithTelegram(user).catch(() => {})
+      loginWithTelegram(user, inviteToken).catch(() => {})
     }
 
     const script = document.createElement('script')
@@ -40,7 +40,7 @@ export function TelegramLoginButton() {
     return () => {
       window.onTelegramAuth = undefined
     }
-  }, [loginWithTelegram])
+  }, [loginWithTelegram, inviteToken])
 
   if (USE_MOCK || !BOT_USERNAME) {
     return (
@@ -48,11 +48,14 @@ export function TelegramLoginButton() {
         <p className="text-sm text-gray-500">
           Mock rejim: Telegram Login Widget o'rniga test hisoblari bilan kiring.
         </p>
+        {inviteToken && (
+          <p className="text-xs text-teal-700">Taklif tokeni aniqlandi: {inviteToken}</p>
+        )}
         {MOCK_ACCOUNTS.map((account) => (
           <button
             key={account.payload.id}
             type="button"
-            onClick={() => loginWithTelegram(account.payload)}
+            onClick={() => loginWithTelegram(account.payload, inviteToken)}
             className="rounded-lg bg-[#2AABEE] px-4 py-2 text-sm font-medium text-white hover:bg-[#2596d1]"
           >
             {account.label}
