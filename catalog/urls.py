@@ -12,4 +12,6 @@ urlpatterns = [
     path("dori/<slug:slug>/", views.drug_detail_view, name="drug_detail"),
     path("dori/<int:drug_id>/sevimli/", views.toggle_favorite_view, name="toggle_favorite"),
     path("haqida/", views.about_view, name="about"),
+    path("boglanish/", views.contact_view, name="contact"),
+    path("foydalanish-shartlari/", views.terms_view, name="terms"),
 ]

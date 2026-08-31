@@ -12,17 +12,17 @@
   </div>
 
   <div class="grid gap-3 sm:grid-cols-3 stagger">
-    <div style="--i:0" class="hover-lift rounded-2xl border border-ink-100 bg-white p-5 text-center shadow-card">
+    <div style="--i:0" class="hover-lift rounded-2xl glass p-5 text-center shadow-card">
       <span class="inline-grid place-items-center w-10 h-10 rounded-xl bg-brand-50 text-brand-600 mb-2">{% icon 'building' 'w-5 h-5' %}</span>
       <p class="text-2xl font-extrabold text-ink-900 font-display">{{ stats.pharmacy_count }}</p>
       <p class="text-xs text-ink-500">dorixona</p>
     </div>
-    <div style="--i:1" class="hover-lift rounded-2xl border border-ink-100 bg-white p-5 text-center shadow-card">
+    <div style="--i:1" class="hover-lift rounded-2xl glass p-5 text-center shadow-card">
       <span class="inline-grid place-items-center w-10 h-10 rounded-xl bg-brand-50 text-brand-600 mb-2">{% icon 'pill' 'w-5 h-5' %}</span>
       <p class="text-2xl font-extrabold text-ink-900 font-display">{{ stats.drug_count }}</p>
       <p class="text-xs text-ink-500">dori</p>
     </div>
-    <div style="--i:2" class="hover-lift rounded-2xl border border-ink-100 bg-white p-5 text-center shadow-card">
+    <div style="--i:2" class="hover-lift rounded-2xl glass p-5 text-center shadow-card">
       <span class="inline-grid place-items-center w-10 h-10 rounded-xl bg-brand-50 text-brand-600 mb-2">{% icon 'user' 'w-5 h-5' %}</span>
       <p class="text-2xl font-extrabold text-ink-900 font-display">{{ stats.staff_count }}</p>
       <p class="text-xs text-ink-500">dorixona xodimi</p>
@@ -33,9 +33,9 @@
     <h2 class="mb-3 text-sm font-semibold text-ink-500 uppercase tracking-wide">Dorixonalar</h2>
     <div class="space-y-2.5 stagger">
       {% for pharmacy in pharmacies %}
-        <div style="--i:{{ forloop.counter0 }}" class="hover-lift flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-ink-100 bg-white p-4 shadow-card">
+        <div style="--i:{{ forloop.counter0 }}" class="hover-lift flex flex-wrap items-center justify-between gap-3 rounded-2xl glass p-4 shadow-card">
           <div class="flex items-center gap-3 min-w-0">
-            <span class="grid place-items-center w-10 h-10 rounded-lg bg-ink-50 text-ink-400 shrink-0">{% icon 'building' 'w-4.5 h-4.5' %}</span>
+            <span class="grid place-items-center w-10 h-10 rounded-lg bg-ink-200 text-ink-400 shrink-0">{% icon 'building' 'w-4.5 h-4.5' %}</span>
             <div class="min-w-0">
               <a href="{{ pharmacy.get_absolute_url }}" class="font-semibold text-ink-900 hover:text-brand-700 transition-colors">{{ pharmacy.name }}</a>
               <p class="text-sm text-ink-500 truncate">{{ pharmacy.address }}</p>
@@ -56,18 +56,35 @@
     <h2 class="mb-3 text-sm font-semibold text-ink-500 uppercase tracking-wide">So'nggi takliflar</h2>
     <div class="space-y-2 text-sm">
       {% for invite in invites %}
-        <div class="flex items-center justify-between rounded-xl border border-ink-100 bg-white p-3.5 shadow-card">
-          <span class="flex items-center gap-2 text-ink-700"><span class="text-ink-400">{% icon 'link' 'w-4 h-4' %}</span>{{ invite.pharmacy.name }} — <code class="text-xs bg-ink-50 px-1.5 py-0.5 rounded">{{ invite.token|slice:":16" }}…</code></span>
-          {% if invite.used_by %}
-            <span class="flex items-center gap-1 text-brand-700 font-medium text-xs bg-brand-50 rounded-full px-2.5 py-1">{% icon 'check-circle' 'w-3.5 h-3.5' %}{{ invite.used_by }}</span>
-          {% elif invite.is_valid %}
-            <span class="text-amber-700 font-medium text-xs bg-amber-50 rounded-full px-2.5 py-1">kutilmoqda</span>
-          {% else %}
-            <span class="text-ink-400 text-xs bg-ink-50 rounded-full px-2.5 py-1">muddati o'tgan</span>
-          {% endif %}
+        <div class="flex items-center justify-between gap-2 rounded-xl glass p-3.5 shadow-card">
+          <span class="flex items-center gap-2 text-ink-700 min-w-0"><span class="text-ink-400 shrink-0">{% icon 'link' 'w-4 h-4' %}</span><span class="truncate">{{ invite.pharmacy.name }}</span> — <code class="text-xs bg-ink-200 px-1.5 py-0.5 rounded shrink-0">{{ invite.token|slice:":16" }}…</code></span>
+          <div class="flex items-center gap-2 shrink-0">
+            {% if invite.used_by %}
+              <span class="flex items-center gap-1 text-brand-700 font-medium text-xs bg-brand-50 rounded-full px-2.5 py-1">{% icon 'check-circle' 'w-3.5 h-3.5' %}{{ invite.used_by }}</span>
+            {% elif invite.is_valid %}
+              <span class="text-amber-400 font-medium text-xs bg-amber-500/10 rounded-full px-2.5 py-1">kutilmoqda</span>
+              <button type="button" onclick="copyInviteLink(this, '{{ request.scheme }}://{{ request.get_host }}{% url 'accounts:register' %}?invite={{ invite.token }}')" class="flex items-center gap-1 text-xs font-medium text-brand-700 hover:underline">{% icon 'copy' 'w-3.5 h-3.5' %}Nusxalash</button>
+            {% else %}
+              <span class="text-ink-400 text-xs bg-ink-200 rounded-full px-2.5 py-1">muddati o'tgan</span>
+            {% endif %}
+          </div>
         </div>
       {% empty %}
         <p class="text-ink-400 text-center py-6">Hali taklif yaratilmagan.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="animate-fade-up" style="animation-delay:.18s">
+    <h2 class="mb-3 text-sm font-semibold text-ink-500 uppercase tracking-wide flex items-center gap-1.5">{% icon 'clock' 'w-4 h-4' %} Faoliyat tarixi</h2>
+    <div class="space-y-1.5 text-sm">
+      {% for log in audit_logs %}
+        <div class="flex items-center justify-between gap-2 rounded-lg px-3 py-2 hover:bg-ink-200/50 transition-colors">
+          <span class="text-ink-600 min-w-0 truncate"><strong class="text-ink-800 font-medium">{% if log.actor %}{{ log.actor.first_name|default:log.actor.username }}{% else %}O'chirilgan foydalanuvchi{% endif %}</strong> {{ log.action }}</span>
+          <span class="shrink-0 text-xs text-ink-400">{{ log.created_at|date:"d.m.Y H:i" }}</span>
+        </div>
+      {% empty %}
+        <p class="text-ink-400 text-center py-6">Hali faoliyat qayd etilmagan.</p>
       {% endfor %}
     </div>
   </div>

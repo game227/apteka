@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load ui_extras %}
+{% block title %}Bog'lanish — Dori Narxlari{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-sm">
+  <div class="animate-fade-up text-center mb-6">
+    <span class="inline-grid place-items-center w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-400 to-violet-500 text-ink-950 shadow-card mb-3">{% icon 'phone' 'w-7 h-7' %}</span>
+    <h1 class="text-2xl font-bold text-ink-900 font-display">Admin/Moderator bilan bog'lanish</h1>
+    <p class="text-sm text-ink-500 mt-1">Savol, taklif yoki muammoingiz bo'lsa — yozing, tez orada javob beramiz</p>
+  </div>
+
+  <form method="post" class="animate-scale-in space-y-4 rounded-2xl glass p-6 shadow-card">
+    {% csrf_token %}
+    {% for field in form %}
+      <div>
+        <label class="block text-sm font-medium text-ink-700 mb-1.5">{{ field.label }}</label>
+        {{ field }}
+        {% for error in field.errors %}<p class="mt-1 flex items-center gap-1 text-xs text-red-400">{% icon 'warning' 'w-3.5 h-3.5' %}{{ error }}</p>{% endfor %}
+      </div>
+    {% endfor %}
+    <button type="submit" class="w-full rounded-xl bg-gradient-to-r from-brand-500 to-violet-600 px-4 py-3 font-semibold text-ink-950 shadow-glow hover:brightness-110 active:scale-[0.98] transition-all">Yuborish</button>
+  </form>
+
+  <p class="mt-5 text-center text-sm text-ink-500">
+    Muayyan dorixona haqida murojaat qilmoqchimisiz? Har bir dorixona sahifasida o'sha dorixona menejeriga to'g'ridan-to'g'ri xabar yuborish tugmasi mavjud.
+  </p>
+</div>
+{% endblock %}

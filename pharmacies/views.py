@@ -3,15 +3,18 @@ import io
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from accounts.decorators import pharmacy_staff_required, platform_admin_required
 from accounts.models import User, UserRole
 from catalog.models import Drug
-from pharmacies.forms import CsvUploadForm, DrugCreateForm, PharmacyForm, PharmacyReviewForm, PriceForm
-from pharmacies.models import Pharmacy, PharmacyInvite
-from pharmacies.services import upsert_price
+from pharmacies.forms import ContactMessageForm, CsvUploadForm, DrugCreateForm, PharmacyForm, PharmacyReviewForm, PriceForm
+from pharmacies.models import AuditLog, ContactMessage, Pharmacy, PharmacyDrugPrice, PharmacyInvite
+from pharmacies.services import contact_message_cooldown_remaining, log_action, upsert_price
 
 
 def pharmacy_detail_view(request, slug):
@@ -33,8 +36,31 @@ def pharmacy_detail_view(request, slug):
         else:
             review_form = PharmacyReviewForm()
 
-    context = {"pharmacy": pharmacy, "prices": prices, "reviews": reviews, "review_form": review_form}
+    context = {
+        "pharmacy": pharmacy,
+        "prices": prices,
+        "reviews": reviews,
+        "review_form": review_form,
+        "contact_form": ContactMessageForm(),
+    }
     return render(request, "pharmacies/detail.html", context)
+
+
+def pharmacy_contact_view(request, slug):
+    pharmacy = get_object_or_404(Pharmacy, slug=slug)
+    if request.method == "POST":
+        cooldown = contact_message_cooldown_remaining(request.user)
+        if cooldown:
+            messages.error(request, f"Juda tez-tez xabar yubormoqdasiz — {cooldown} soniyadan keyin qayta urinib ko'ring.")
+            return redirect("pharmacies:detail", slug=slug)
+        form = ContactMessageForm(request.POST)
+        if form.is_valid():
+            msg = form.save(commit=False)
+            msg.sender = request.user
+            msg.pharmacy = pharmacy
+            msg.save()
+            messages.success(request, "Xabaringiz dorixona menejeriga yuborildi.")
+    return redirect("pharmacies:detail", slug=slug)
 
 
 @pharmacy_staff_required
@@ -50,8 +76,37 @@ def staff_panel_view(request):
         "prices": prices,
         "price_form": PriceForm(initial=initial),
         "csv_form": CsvUploadForm(),
+        "contact_messages": pharmacy.contact_messages.select_related("sender")[:20],
     }
     return render(request, "pharmacies/staff_panel.html", context)
+
+
+@pharmacy_staff_required
+def resolve_contact_message_view(request, message_id):
+    msg = get_object_or_404(ContactMessage, pk=message_id, pharmacy=request.user.pharmacy)
+    msg.is_resolved = True
+    msg.save(update_fields=["is_resolved"])
+    log_action(request.user, f"“{msg.subject}” xabarini hal qilingan deb belgiladi ({msg.pharmacy.name})")
+
+    next_url = request.POST.get("next")
+    if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+        return redirect(next_url)
+    return redirect("pharmacies:staff_panel")
+
+
+@pharmacy_staff_required
+def staff_drug_list_view(request):
+    """Katalogdagi barcha dorilar — dorixona xodimi bu yerdan ko'rib,
+    qidirib, kerak bo'lsa tahrirlashi mumkin (o'chirish esa yo'q — Drug
+    boshqa dorixonalar bilan ham baham ko'riladi, o'chirish faqat admin
+    orqali, chunki u boshqalarning narx yozuvlarini ham yo'qotib qo'yadi)."""
+    query = (request.GET.get("q") or "").strip()
+    drugs = Drug.objects.select_related("substance").order_by("trade_name")
+    if query:
+        drugs = drugs.filter(trade_name__icontains=query)
+    paginator = Paginator(drugs, 50)
+    page = paginator.get_page(request.GET.get("page"))
+    return render(request, "pharmacies/staff_drug_list.html", {"drugs": page, "query": query})
 
 
 @pharmacy_staff_required
@@ -67,7 +122,23 @@ def staff_drug_create_view(request):
             return redirect(f"{reverse('pharmacies:staff_panel')}?new_drug={drug.id}")
     else:
         form = DrugCreateForm()
-    return render(request, "pharmacies/staff_drug_form.html", {"form": form})
+    return render(request, "pharmacies/staff_drug_form.html", {"form": form, "is_edit": False})
+
+
+@pharmacy_staff_required
+def staff_drug_update_view(request, pk):
+    """Mavjud dorining tafsilotlarini tuzatish (narxi emas — narx
+    o'zining dorixonasi uchun alohida `staff_price_update_view` orqali)."""
+    drug = get_object_or_404(Drug, pk=pk)
+    if request.method == "POST":
+        form = DrugCreateForm(request.POST, instance=drug)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"“{drug.trade_name}” yangilandi.")
+            return redirect("pharmacies:staff_drug_list")
+    else:
+        form = DrugCreateForm(instance=drug)
+    return render(request, "pharmacies/staff_drug_form.html", {"form": form, "is_edit": True, "drug": drug})
 
 
 @pharmacy_staff_required
@@ -83,6 +154,16 @@ def staff_price_update_view(request):
                 user=request.user,
             )
             messages.success(request, "Narx saqlandi.")
+    return redirect("pharmacies:staff_panel")
+
+
+@pharmacy_staff_required
+def staff_price_delete_view(request, pk):
+    price = get_object_or_404(PharmacyDrugPrice.objects.select_related("drug"), pk=pk, pharmacy=request.user.pharmacy)
+    drug_name = price.drug.trade_name
+    price.delete()
+    log_action(request.user, f"“{drug_name}” narxini o'chirdi ({request.user.pharmacy.name})")
+    messages.success(request, f"“{drug_name}” narxi o'chirildi.")
     return redirect("pharmacies:staff_panel")
 
 
@@ -123,11 +204,24 @@ def staff_csv_upload_view(request):
     return redirect("pharmacies:staff_panel")
 
 
+@pharmacy_staff_required
+def staff_csv_export_view(request):
+    pharmacy = request.user.pharmacy
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = f'attachment; filename="{pharmacy.slug}-narxlar.csv"'
+    writer = csv.writer(response)
+    writer.writerow(["drug_id", "trade_name", "price", "in_stock", "updated_at"])
+    for row in pharmacy.prices.select_related("drug").order_by("drug__trade_name"):
+        writer.writerow([row.drug_id, row.drug.trade_name, row.price, "true" if row.in_stock else "false", row.updated_at.isoformat()])
+    return response
+
+
 @platform_admin_required
 def admin_dashboard_view(request):
     context = {
         "pharmacies": Pharmacy.objects.all().order_by("-created_at")[:50],
         "invites": PharmacyInvite.objects.select_related("pharmacy", "used_by").order_by("-created_at")[:20],
+        "audit_logs": AuditLog.objects.select_related("actor")[:30],
         "stats": {
             "pharmacy_count": Pharmacy.objects.count(),
             "drug_count": Drug.objects.count(),
@@ -145,6 +239,7 @@ def admin_pharmacy_create_view(request):
             pharmacy = form.save(commit=False)
             pharmacy.created_by = request.user
             pharmacy.save()
+            log_action(request.user, f"“{pharmacy.name}” dorixonasini qo'shdi")
             messages.success(request, f"“{pharmacy.name}” qo'shildi.")
             return redirect("pharmacies:admin_dashboard")
     else:
@@ -157,5 +252,6 @@ def admin_invite_create_view(request, pharmacy_id):
     pharmacy = get_object_or_404(Pharmacy, pk=pharmacy_id)
     invite = PharmacyInvite.objects.create(pharmacy=pharmacy)
     url = request.build_absolute_uri(reverse("accounts:register") + f"?invite={invite.token}")
+    log_action(request.user, f"“{pharmacy.name}” uchun taklif havolasi yaratdi")
     messages.success(request, f"Taklif havolasi yaratildi: {url}")
     return redirect("pharmacies:admin_dashboard")

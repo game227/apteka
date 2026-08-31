@@ -15,6 +15,13 @@ class PrescriptionScan(models.Model):
     def __str__(self):
         return f"Skan #{self.pk} ({self.created_at:%Y-%m-%d})"
 
+    def save(self, *args, **kwargs):
+        if self.image and not self.image._committed:
+            from config.image_utils import compress_image
+
+            self.image = compress_image(self.image, max_dimension=1600, quality=88)
+        super().save(*args, **kwargs)
+
 
 class PrescriptionScanItem(models.Model):
     STATUS_CHOICES = [

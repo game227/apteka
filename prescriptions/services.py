@@ -10,6 +10,11 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
+
+class GeminiUnavailableError(Exception):
+    """Gemini chaqiruvi muvaffaqiyatsiz tugadi (tarmoq, kvota, kalit va h.k.) —
+    'hech qanday dori topilmadi' bilan chalkashmasligi uchun alohida turdagi xato."""
+
 _SCAN_PROMPT = """\
 Bu — qo'lda yozilgan yoki bosma shifokor retsepti rasmi.
 Rasmda ko'rsatilgan barcha dori nomlarini (savdo nomi yoki ta'sir moddasi) aniqlang.
@@ -40,7 +45,7 @@ def scan_prescription_image(image_bytes: bytes, mime_type: str = "image/jpeg") -
     client, model = _get_client()
     if client is None:
         logger.warning("GEMINI_API_KEY sozlanmagan, retsept skaneri ishlamaydi")
-        return []
+        raise GeminiUnavailableError("GEMINI_API_KEY sozlanmagan")
     try:
         from google.genai import types
 
@@ -51,9 +56,9 @@ def scan_prescription_image(image_bytes: bytes, mime_type: str = "image/jpeg") -
         )
         data = json.loads(response.text or "{}")
         return [d.strip() for d in data.get("drugs", []) if isinstance(d, str) and d.strip()]
-    except Exception:
+    except Exception as exc:
         logger.exception("Gemini retsept skanerlashda xatolik")
-        return []
+        raise GeminiUnavailableError(str(exc)) from exc
 
 
 def guess_substance_name(raw_text: str) -> str | None:

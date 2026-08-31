@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 
 from catalog.services import normalize_and_match
@@ -15,10 +16,18 @@ def scan_view(request):
 
     scan = PrescriptionScan.objects.create(user=request.user, image=request.FILES["image"])
 
-    from prescriptions.services import scan_prescription_image
+    from prescriptions.services import GeminiUnavailableError, scan_prescription_image
 
     image_bytes = scan.image.read()
-    raw_names = scan_prescription_image(image_bytes, mime_type=request.FILES["image"].content_type or "image/jpeg")
+    try:
+        raw_names = scan_prescription_image(image_bytes, mime_type=request.FILES["image"].content_type or "image/jpeg")
+    except GeminiUnavailableError:
+        raw_names = []
+        messages.error(
+            request,
+            "Retsept skaneri hozir ishlamayapti (server yoki tarmoq muammosi bo'lishi mumkin). "
+            "Birozdan keyin qayta urinib ko'ring yoki dorilarni qo'lda qidiring.",
+        )
 
     items = []
     for raw_name in raw_names:
@@ -50,9 +59,29 @@ def confirm_view(request, scan_id):
         item.confirmed_drug_id = int(drug_id)
         item.save(update_fields=["confirmed_drug"])
         prices = nearby_prices(item.confirmed_drug_id, lat, lng, radius_km=15)
-        results.append({"drug": item.confirmed_drug, "prices": prices})
+        map_points = [
+            {
+                "name": row.pharmacy.name,
+                "slug": row.pharmacy.slug,
+                "lat": row.pharmacy.lat,
+                "lng": row.pharmacy.lng,
+                "price": float(row.price),
+                "distance_km": row.distance_km,
+                "in_stock": row.in_stock,
+            }
+            for row in prices
+        ]
+        results.append(
+            {
+                "drug": item.confirmed_drug,
+                "prices": prices,
+                "map_points": map_points,
+                "map_id": f"pharmacy-map-{item.id}",
+                "data_id": f"map-data-{item.id}",
+            }
+        )
 
-    return render(request, "prescriptions/result.html", {"scan": scan, "results": results})
+    return render(request, "prescriptions/result.html", {"scan": scan, "results": results, "user_lat": lat, "user_lng": lng})
 
 
 def history_view(request):

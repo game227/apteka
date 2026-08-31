@@ -1,3 +1,6 @@
+from django.contrib import messages
+from django.contrib.auth.decorators import login_not_required
+from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -5,7 +8,8 @@ from django.views.decorators.http import require_POST
 
 from catalog.models import Category, Drug, Favorite, SearchQuery, Substance
 from catalog.services import normalize_and_match
-from pharmacies.services import nearby_prices
+from pharmacies.forms import ContactMessageForm
+from pharmacies.services import contact_message_cooldown_remaining, nearby_pharmacies, nearby_prices
 
 
 def _parse_coords(request):
@@ -34,11 +38,22 @@ def home_view(request):
             result_count=len(results),
         )
 
+    lat, lng = _parse_coords(request)
+    pharmacies = nearby_pharmacies(lat, lng)[:12]
+    map_points = [
+        {"name": p.name, "slug": p.slug, "lat": p.lat, "lng": p.lng, "price": None, "distance_km": p.distance_km, "in_stock": True}
+        for p in pharmacies
+    ]
+
     context = {
         "query": query,
         "results": results,
         "categories": Category.objects.all()[:8],
         "popular_drugs": Drug.objects.select_related("substance").order_by("-search_hits")[:8],
+        "has_location": lat is not None,
+        "map_points": map_points,
+        "user_lat": lat,
+        "user_lng": lng,
     }
     return render(request, "catalog/home.html", context)
 
@@ -66,7 +81,9 @@ def category_list_view(request):
 def category_detail_view(request, slug):
     category = get_object_or_404(Category, slug=slug)
     drugs = Drug.objects.select_related("substance").filter(substance__category=category)
-    return render(request, "catalog/category_detail.html", {"category": category, "drugs": drugs})
+    paginator = Paginator(drugs, 24)
+    page = paginator.get_page(request.GET.get("page"))
+    return render(request, "catalog/category_detail.html", {"category": category, "drugs": page})
 
 
 def drug_detail_view(request, slug):
@@ -89,6 +106,19 @@ def drug_detail_view(request, slug):
         request.user.is_authenticated and Favorite.objects.filter(user=request.user, drug=drug).exists()
     )
 
+    map_points = [
+        {
+            "name": row.pharmacy.name,
+            "slug": row.pharmacy.slug,
+            "lat": row.pharmacy.lat,
+            "lng": row.pharmacy.lng,
+            "price": float(row.price),
+            "distance_km": row.distance_km,
+            "in_stock": row.in_stock,
+        }
+        for row in prices
+    ]
+
     context = {
         "drug": drug,
         "prices": prices,
@@ -96,6 +126,9 @@ def drug_detail_view(request, slug):
         "is_favorite": is_favorite,
         "has_location": lat is not None,
         "price_trend": price_trend,
+        "map_points": map_points,
+        "user_lat": lat,
+        "user_lng": lng,
     }
     return render(request, "catalog/drug_detail.html", context)
 
@@ -113,3 +146,26 @@ def toggle_favorite_view(request, drug_id):
 
 def about_view(request):
     return render(request, "catalog/about.html")
+
+
+@login_not_required
+def terms_view(request):
+    return render(request, "catalog/terms.html")
+
+
+def contact_view(request):
+    if request.method == "POST":
+        cooldown = contact_message_cooldown_remaining(request.user)
+        if cooldown:
+            messages.error(request, f"Juda tez-tez xabar yubormoqdasiz — {cooldown} soniyadan keyin qayta urinib ko'ring.")
+            return redirect("catalog:contact")
+        form = ContactMessageForm(request.POST)
+        if form.is_valid():
+            msg = form.save(commit=False)
+            msg.sender = request.user
+            msg.save()
+            messages.success(request, "Xabaringiz yuborildi — admin/moderator tez orada bog'lanadi.")
+            return redirect("catalog:contact")
+    else:
+        form = ContactMessageForm()
+    return render(request, "catalog/contact.html", {"form": form})

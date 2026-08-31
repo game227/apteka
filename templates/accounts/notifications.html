@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load ui_extras %}
+{% block title %}Xabarlar — Dori Narxlari{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-2xl">
+  <div class="animate-fade-up mb-6">
+    <h1 class="text-2xl font-bold text-ink-900 font-display flex items-center gap-2">{% icon 'bell' 'w-6 h-6 text-brand-600' %} Xabarlar</h1>
+    <p class="text-sm text-ink-500 mt-1">
+      {% if received %}Dorixonangizga kelgan mijoz xabarlari{% else %}Siz yuborgan xabarlar va ularning holati{% endif %}
+    </p>
+  </div>
+
+  {% if received %}
+    <div class="space-y-2.5 stagger">
+      {% for msg in received %}
+        <div style="--i:{{ forloop.counter0 }}" class="rounded-xl glass p-3.5 text-sm shadow-card {% if msg.is_resolved %}opacity-60{% endif %}">
+          <div class="flex items-center justify-between gap-2">
+            <p class="font-medium text-ink-900">{{ msg.subject }}</p>
+            <span class="shrink-0 text-xs text-ink-400">{{ msg.created_at|date:"d.m.Y H:i" }}</span>
+          </div>
+          <p class="text-ink-500 mt-1">{{ msg.message }}</p>
+          <div class="flex items-center justify-between gap-2 mt-1.5">
+            <p class="text-xs text-ink-400">{% if msg.sender %}{{ msg.sender.first_name|default:msg.sender.username }}{% else %}O'chirilgan foydalanuvchi{% endif %} dan</p>
+            {% if msg.is_resolved %}
+              <span class="flex items-center gap-1 text-xs text-brand-600 font-medium">{% icon 'check-circle' 'w-3.5 h-3.5' %}Hal qilindi</span>
+            {% else %}
+              <form method="post" action="{% url 'pharmacies:resolve_contact_message' msg.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{% url 'accounts:notifications' %}">
+                <button class="text-xs font-medium text-brand-700 hover:underline">Hal qilindi deb belgilash</button>
+              </form>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% elif sent %}
+    <div class="space-y-2.5 stagger">
+      {% for msg in sent %}
+        <div style="--i:{{ forloop.counter0 }}" class="rounded-xl glass p-3.5 text-sm shadow-card">
+          <div class="flex items-center justify-between gap-2">
+            <p class="font-medium text-ink-900">{{ msg.subject }}</p>
+            {% if msg.is_resolved %}
+              <span class="shrink-0 flex items-center gap-1 rounded-full bg-brand-50 text-brand-700 text-xs font-medium px-2.5 py-1">{% icon 'check-circle' 'w-3.5 h-3.5' %}Hal qilindi</span>
+            {% else %}
+              <span class="shrink-0 flex items-center gap-1 rounded-full bg-amber-500/10 text-amber-400 text-xs font-medium px-2.5 py-1">{% icon 'clock' 'w-3.5 h-3.5' %}Kutilmoqda</span>
+            {% endif %}
+          </div>
+          <p class="text-ink-500 mt-1">{{ msg.message }}</p>
+          <p class="text-xs text-ink-400 mt-1.5">{% if msg.pharmacy %}{{ msg.pharmacy.name }}ga{% else %}Admin/moderatorga{% endif %} · {{ msg.created_at|date:"d.m.Y H:i" }}</p>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="animate-scale-in rounded-2xl border-2 border-dashed border-ink-200 p-10 text-center">
+      <span class="mx-auto mb-3 grid place-items-center w-12 h-12 rounded-full bg-ink-100 text-ink-400">{% icon 'bell' 'w-5 h-5' %}</span>
+      <p class="text-ink-600">Hali xabar yo'q.</p>
+      <a href="{% url 'catalog:contact' %}" class="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 transition-colors">{% icon 'phone' 'w-4 h-4' %}Admin bilan bog'lanish</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

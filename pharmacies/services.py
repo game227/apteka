@@ -6,12 +6,32 @@ bog'liqliklarisiz ishlaydi.
 """
 
 import math
+from datetime import timedelta
 
 from django.db import transaction
+from django.utils import timezone
 
-from pharmacies.models import Pharmacy, PharmacyDrugPrice, PriceHistory
+from pharmacies.models import AuditLog, ContactMessage, Pharmacy, PharmacyDrugPrice, PriceHistory
 
 EARTH_RADIUS_KM = 6371.0
+CONTACT_MESSAGE_COOLDOWN = timedelta(minutes=2)
+
+
+def log_action(user, action: str) -> None:
+    """Admin panelidagi faoliyat tarixi uchun bitta qatorli yozuv."""
+    AuditLog.objects.create(actor=user if getattr(user, "is_authenticated", False) else None, action=action)
+
+
+def contact_message_cooldown_remaining(user) -> int | None:
+    """Foydalanuvchi hozir xabar yubora oladimi — bo'lsa None, aks holda
+    qolgan soniyalar soni (spam'dan himoya uchun oddiy cooldown)."""
+    last = ContactMessage.objects.filter(sender=user).order_by("-created_at").first()
+    if not last:
+        return None
+    elapsed = timezone.now() - last.created_at
+    if elapsed >= CONTACT_MESSAGE_COOLDOWN:
+        return None
+    return int((CONTACT_MESSAGE_COOLDOWN - elapsed).total_seconds())
 
 
 def haversine_km(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
@@ -54,8 +74,15 @@ def nearby_prices(drug_id: int, lat: float | None, lng: float | None, radius_km:
     return rows
 
 
-def nearby_pharmacies(lat: float, lng: float, radius_km: float | None = None):
+def nearby_pharmacies(lat: float | None, lng: float | None, radius_km: float | None = None):
+    """Barcha dorixonalar ro'yxati, har biriga `.distance_km` biriktirilgan
+    holda (lat/lng berilmasa — None, nomi bo'yicha saralangan)."""
     pharmacies = list(Pharmacy.objects.all())
+    if lat is None or lng is None:
+        for p in pharmacies:
+            p.distance_km = None
+        return pharmacies
+
     for p in pharmacies:
         p.distance_km = round(haversine_km(lat, lng, p.lat, p.lng), 2)
     if radius_km:

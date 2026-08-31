@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load ui_extras %}
+{% block title %}Dorilar katalogi — Dorixona paneli{% endblock %}
+{% block content %}
+<div class="space-y-5">
+  <div class="animate-fade-up flex flex-wrap items-center justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <a href="{% url 'pharmacies:staff_panel' %}" class="grid place-items-center w-9 h-9 rounded-lg text-ink-400 hover:bg-ink-100 transition-colors">{% icon 'arrow-right' 'w-4.5 h-4.5 rotate-180' %}</a>
+      <div>
+        <h1 class="text-xl font-bold text-ink-900 font-display">Dorilar katalogi</h1>
+        <p class="text-sm text-ink-500">Barcha dorixonalar uchun umumiy — tahrirlaganingiz hammaga ko'rinadi</p>
+      </div>
+    </div>
+    <a href="{% url 'pharmacies:staff_drug_create' %}" class="flex items-center gap-1.5 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-card hover:bg-brand-700 active:scale-[0.98] transition-all">{% icon 'plus' 'w-4 h-4' %}Yangi dori</a>
+  </div>
+
+  <form method="get" class="animate-fade-up relative max-w-sm" style="animation-delay:.05s">
+    <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-400">{% icon 'search' 'w-4 h-4' %}</span>
+    <input type="text" name="q" value="{{ query }}" placeholder="Dori nomi bo'yicha qidirish..."
+           class="w-full rounded-xl border border-ink-200 pl-10 pr-3 py-2.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-100">
+  </form>
+
+  <div class="animate-fade-up overflow-x-auto rounded-2xl glass shadow-card" style="animation-delay:.1s">
+    <table class="w-full text-sm">
+      <thead class="bg-ink-200/70 text-left text-ink-500">
+        <tr>
+          <th class="px-4 py-3 font-medium">Savdo nomi</th>
+          <th class="px-4 py-3 font-medium">Ta'sir moddasi</th>
+          <th class="px-4 py-3 font-medium">Ishlab chiqaruvchi</th>
+          <th class="px-4 py-3 font-medium">Referent narx</th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-ink-200">
+        {% for drug in drugs %}
+          <tr class="hover:bg-ink-200/50 transition-colors">
+            <td class="px-4 py-3 font-medium text-ink-900">{{ drug.trade_name }}{% if drug.dosage_strength %} <span class="text-ink-400 font-normal">{{ drug.dosage_strength }}</span>{% endif %}</td>
+            <td class="px-4 py-3 text-ink-600">{{ drug.substance.name_inn }}</td>
+            <td class="px-4 py-3 text-ink-500">{{ drug.manufacturer|default:"—" }}</td>
+            <td class="px-4 py-3 text-ink-500">{% if drug.reference_price %}{{ drug.reference_price|floatformat:0 }} so'm{% else %}—{% endif %}</td>
+            <td class="px-4 py-3 text-right">
+              <a href="{% url 'pharmacies:staff_drug_update' drug.id %}" class="inline-flex items-center gap-1 text-xs font-medium text-brand-700 hover:underline">{% icon 'edit' 'w-3.5 h-3.5' %}Tahrirlash</a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" class="px-4 py-10 text-center text-ink-400">{% if query %}"{{ query }}" bo'yicha hech narsa topilmadi.{% else %}Katalog bo'sh.{% endif %}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if drugs.paginator.num_pages > 1 %}
+    <div class="flex items-center justify-center gap-2">
+      {% if drugs.has_previous %}
+        <a href="?q={{ query|urlencode }}&page={{ drugs.previous_page_number }}" class="glass glass-hover rounded-xl px-4 py-2 text-sm font-medium text-ink-700">← Oldingi</a>
+      {% endif %}
+      <span class="text-sm text-ink-500 px-2">{{ drugs.number }} / {{ drugs.paginator.num_pages }}</span>
+      {% if drugs.has_next %}
+        <a href="?q={{ query|urlencode }}&page={{ drugs.next_page_number }}" class="glass glass-hover rounded-xl px-4 py-2 text-sm font-medium text-ink-700">Keyingi →</a>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

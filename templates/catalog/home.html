@@ -4,37 +4,58 @@
 {% block content %}
 <div class="mx-auto max-w-2xl">
 
-  <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-600 via-brand-600 to-brand-800 px-6 py-12 sm:py-14 text-center mb-8 animate-fade-up">
-    <div class="pointer-events-none absolute -top-16 -left-10 w-56 h-56 rounded-full bg-brand-300/30 blur-3xl animate-blob"></div>
-    <div class="pointer-events-none absolute -bottom-20 -right-10 w-64 h-64 rounded-full bg-brand-400/20 blur-3xl animate-blob" style="animation-delay:3s"></div>
+  <div class="relative overflow-hidden rounded-3xl glass px-6 py-14 sm:py-16 text-center mb-8 animate-fade-up">
+    <div class="pointer-events-none absolute inset-0 bg-gradient-to-br from-brand-950/40 via-transparent to-violet-950/40"></div>
+    <div class="pointer-events-none absolute -top-24 -left-16 w-72 h-72 rounded-full bg-brand-400/25 blur-3xl animate-blob"></div>
+    <div class="pointer-events-none absolute -bottom-24 -right-16 w-80 h-80 rounded-full bg-violet-500/25 blur-3xl animate-blob" style="animation-delay:3s"></div>
 
-    <span class="relative inline-flex items-center gap-1.5 rounded-full bg-white/15 text-white/90 text-xs font-semibold px-3 py-1 mb-4 backdrop-blur-sm">
+    <span class="relative inline-flex items-center gap-1.5 rounded-full bg-brand-100 text-brand-800 text-xs font-semibold px-3 py-1 mb-4 animate-glow-pulse">
       {% icon 'shield' 'w-3.5 h-3.5' %} Ishonchli narx solishtirish
     </span>
-    <h1 class="relative font-display text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Dori narxlarini bir joydan solishtiring</h1>
-    <p class="relative mt-2.5 text-brand-50/90 max-w-md mx-auto">Yaqin atrofdagi dorixonalardan eng arzon va ishonchli narxni toping</p>
+    <h1 class="relative font-display text-3xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-brand-300 via-brand-400 to-violet-400 bg-clip-text text-transparent animate-gradient">Dori narxlarini bir joydan solishtiring</h1>
+    <p class="relative mt-2.5 text-ink-600 max-w-md mx-auto">Yaqin atrofdagi dorixonalardan eng arzon va ishonchli narxni toping</p>
 
     <form method="get" class="relative mt-7 flex gap-2 max-w-lg mx-auto">
       <div class="relative flex-1">
-        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-ink-400">{% icon 'search' 'w-5 h-5' %}</span>
+        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-ink-500">{% icon 'search' 'w-5 h-5' %}</span>
         <input
           type="text" name="q" value="{{ query }}" autofocus
           placeholder="Masalan: Amoksiklav"
-          class="w-full rounded-2xl border-0 pl-11 pr-4 py-3.5 text-base text-ink-900 shadow-lg shadow-brand-950/20 focus:outline-none focus:ring-4 focus:ring-white/40 placeholder:text-ink-400">
+          class="w-full rounded-2xl border border-white/10 bg-ink-100 pl-11 pr-4 py-3.5 text-base text-ink-900 shadow-glow focus:outline-none focus:ring-2 focus:ring-brand-400/60 placeholder:text-ink-500">
       </div>
-      <button class="shrink-0 rounded-2xl bg-ink-900 px-5 py-3.5 font-semibold text-white shadow-lg hover:bg-ink-800 active:scale-[0.97] transition-all">Qidirish</button>
+      <button class="shrink-0 rounded-2xl bg-gradient-to-br from-brand-500 to-violet-600 px-5 py-3.5 font-semibold text-ink-950 shadow-glow hover:brightness-110 active:scale-[0.97] transition-all">Qidirish</button>
     </form>
   </div>
 
-  <a href="{% url 'prescriptions:upload' %}" class="hover-lift group flex items-center gap-3 rounded-2xl border border-brand-100 bg-brand-50/70 px-5 py-4 mb-8 hover:border-brand-300 hover:shadow-card">
-    <span class="grid place-items-center w-11 h-11 rounded-xl bg-white text-brand-600 shadow-card shrink-0 transition-transform group-hover:scale-110">
+  {% if not query %}
+    <div class="animate-fade-up mb-8" style="animation-delay:.02s">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-sm font-semibold text-ink-500 uppercase tracking-wide flex items-center gap-1.5">{% icon 'map-pin' 'w-3.5 h-3.5 text-brand-500' %}{% if has_location %}Sizga eng yaqin{% else %}Dorixonalar xaritasi{% endif %}</h2>
+        {% if not has_location %}
+          <button onclick="requestHomeLocation()" id="home-geo-btn" class="text-xs font-medium text-brand-700 hover:text-brand-400 transition-colors flex items-center gap-1">{% icon 'map-pin' 'w-3.5 h-3.5' %}Joylashuvimni aniqlash</button>
+        {% endif %}
+      </div>
+      {% if map_points %}
+        <div id="home-geo-error"></div>
+        <div class="rounded-2xl overflow-hidden glass">
+          <div id="home-pharmacy-map" style="height:260px"></div>
+        </div>
+        {{ map_points|json_script:"home-map-points" }}
+      {% else %}
+        <div class="rounded-2xl border-2 border-dashed border-ink-300 p-8 text-center text-ink-500 text-sm">Hozircha dorixona qo'shilmagan.</div>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <a href="{% url 'prescriptions:upload' %}" class="hover-lift glass glass-hover group flex items-center gap-3 rounded-2xl px-5 py-4 mb-8">
+    <span class="grid place-items-center w-11 h-11 rounded-xl bg-gradient-to-br from-brand-400 to-violet-500 text-ink-950 shadow-glow shrink-0 transition-transform group-hover:scale-110">
       {% icon 'camera' 'w-5 h-5' %}
     </span>
     <div class="flex-1">
-      <p class="font-semibold text-brand-900">Buning o'rniga retsept rasmini yuklang</p>
-      <p class="text-sm text-brand-700/70">Dori nomlarini avtomatik aniqlab beramiz</p>
+      <p class="font-semibold text-ink-900">Buning o'rniga retsept rasmini yuklang</p>
+      <p class="text-sm text-ink-500">Dori nomlarini avtomatik aniqlab beramiz</p>
     </div>
-    <span class="text-brand-400 group-hover:translate-x-1 transition-transform">{% icon 'arrow-right' 'w-5 h-5' %}</span>
+    <span class="text-brand-500 group-hover:translate-x-1 transition-transform">{% icon 'arrow-right' 'w-5 h-5' %}</span>
   </a>
 
   {% if query %}
@@ -43,20 +64,20 @@
       {% if results %}
         <div class="space-y-3 stagger">
           {% for drug in results %}
-            <a href="{{ drug.get_absolute_url }}" style="--i:{{ forloop.counter0 }}" class="hover-lift group flex items-center justify-between rounded-2xl border border-ink-100 bg-white p-4 shadow-card hover:border-brand-200 hover:shadow-card-hover">
+            <a href="{{ drug.get_absolute_url }}" style="--i:{{ forloop.counter0 }}" class="hover-lift glass glass-hover group flex items-center justify-between rounded-2xl p-4">
               <div class="min-w-0">
                 <p class="font-semibold text-ink-900 truncate">{{ drug.trade_name }}</p>
                 <p class="text-sm text-ink-500 truncate">{{ drug.substance.name_inn }}{% if drug.dosage_form %} · {{ drug.dosage_form }} {{ drug.dosage_strength }}{% endif %}</p>
               </div>
-              <span class="shrink-0 ml-3 grid place-items-center w-9 h-9 rounded-xl bg-ink-50 text-ink-400 group-hover:bg-brand-600 group-hover:text-white transition-colors">
+              <span class="shrink-0 ml-3 grid place-items-center w-9 h-9 rounded-xl bg-ink-200 text-ink-500 group-hover:bg-brand-600 group-hover:text-ink-950 transition-colors">
                 {% icon 'chevron-right' 'w-4.5 h-4.5' %}
               </span>
             </a>
           {% endfor %}
         </div>
       {% else %}
-        <div class="animate-scale-in rounded-2xl border-2 border-dashed border-ink-200 p-10 text-center">
-          <div class="mx-auto mb-3 grid place-items-center w-12 h-12 rounded-full bg-ink-100 text-ink-400">{% icon 'search' 'w-5 h-5' %}</div>
+        <div class="animate-scale-in rounded-2xl border-2 border-dashed border-ink-300 p-10 text-center">
+          <div class="mx-auto mb-3 grid place-items-center w-12 h-12 rounded-full bg-ink-200 text-ink-500">{% icon 'search' 'w-5 h-5' %}</div>
           <p class="text-ink-500">Hech narsa topilmadi. Boshqa nom bilan urinib ko'ring.</p>
         </div>
       {% endif %}
@@ -67,8 +88,8 @@
         <h2 class="mb-3 text-sm font-semibold text-ink-500 uppercase tracking-wide">Ommabop dorilar</h2>
         <div class="grid gap-3 sm:grid-cols-2 stagger">
           {% for drug in popular_drugs %}
-            <a href="{{ drug.get_absolute_url }}" style="--i:{{ forloop.counter0 }}" class="hover-lift flex items-center gap-3 rounded-2xl border border-ink-100 bg-white p-3.5 shadow-card hover:border-brand-200 hover:shadow-card-hover">
-              <span class="grid place-items-center w-10 h-10 rounded-xl bg-brand-50 text-brand-600 shrink-0">{% icon 'pill' 'w-4.5 h-4.5' %}</span>
+            <a href="{{ drug.get_absolute_url }}" style="--i:{{ forloop.counter0 }}" class="hover-lift glass glass-hover flex items-center gap-3 rounded-2xl p-3.5">
+              <span class="grid place-items-center w-10 h-10 rounded-xl bg-brand-100 text-brand-700 shrink-0">{% icon 'pill' 'w-4.5 h-4.5' %}</span>
               <div class="min-w-0">
                 <p class="font-medium text-ink-900 truncate">{{ drug.trade_name }}</p>
                 <p class="text-xs text-ink-500 truncate">{{ drug.substance.name_inn }}</p>
@@ -84,12 +105,38 @@
         <h2 class="mb-3 text-sm font-semibold text-ink-500 uppercase tracking-wide">Turkumlar bo'yicha ko'rish</h2>
         <div class="flex flex-wrap gap-2">
           {% for cat in categories %}
-            <a href="{{ cat.get_absolute_url }}" class="hover-lift rounded-full border border-ink-100 bg-white px-4 py-2 text-sm font-medium text-ink-700 shadow-card hover:border-brand-300 hover:text-brand-700">{{ cat.icon }} {{ cat.name_uz }}</a>
+            <a href="{{ cat.get_absolute_url }}" class="hover-lift glass glass-hover rounded-full px-4 py-2 text-sm font-medium text-ink-700 hover:text-brand-400">{{ cat.icon }} {{ cat.name_uz }}</a>
           {% endfor %}
-          <a href="{% url 'catalog:category_list' %}" class="flex items-center gap-1 rounded-full px-4 py-2 text-sm font-semibold text-brand-700 hover:gap-1.5 transition-all">Barchasi {% icon 'arrow-right' 'w-4 h-4' %}</a>
+          <a href="{% url 'catalog:category_list' %}" class="flex items-center gap-1 rounded-full px-4 py-2 text-sm font-semibold text-brand-700 hover:gap-1.5 hover:text-brand-400 transition-all">Barchasi {% icon 'arrow-right' 'w-4 h-4' %}</a>
         </div>
       </div>
     {% endif %}
   {% endif %}
 </div>
+{% if not query and map_points %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  initPharmacyMap('home-pharmacy-map', 'home-map-points', {{ user_lat|default_if_none:"null" }}, {{ user_lng|default_if_none:"null" }});
+});
+
+function requestHomeLocation() {
+  const btn = document.getElementById('home-geo-btn');
+  if (!('geolocation' in navigator)) return;
+  btn.textContent = 'Aniqlanmoqda...';
+  btn.disabled = true;
+  navigator.geolocation.getCurrentPosition(function (pos) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('lat', pos.coords.latitude);
+    url.searchParams.set('lng', pos.coords.longitude);
+    window.location.href = url.toString();
+  }, function (err) {
+    btn.disabled = false;
+    btn.textContent = 'Joylashuvimni aniqlash';
+    let msg = "Joylashuvni aniqlab bo'lmadi.";
+    if (err.code === err.PERMISSION_DENIED) msg = "Joylashuvga ruxsat berilmadi.";
+    document.getElementById('home-geo-error').innerHTML = '<p class="mb-2 text-xs text-red-400">' + msg + '</p>';
+  }, { timeout: 10000, maximumAge: 60000 });
+}
+</script>
+{% endif %}
 {% endblock %}

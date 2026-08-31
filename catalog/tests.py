@@ -1,7 +1,10 @@
 import pytest
+from django.urls import reverse
 
-from catalog.models import Drug, DrugAlias, Substance
+from accounts.models import User
+from catalog.models import Category, Drug, DrugAlias, Substance
 from catalog.services import normalize_and_match, normalize_text, transliterate
+from pharmacies.models import ContactMessage
 
 
 @pytest.fixture
@@ -72,3 +75,81 @@ def test_different_drugs_do_not_cross_match(seeded_drugs):
     result = normalize_and_match("Panadol", use_gemini_fallback=False)
     assert result.status == "matched"
     assert result.drug == seeded_drugs["panadol"]
+
+
+def test_contact_view_creates_admin_message(client, db):
+    user = User.objects.create_user(username="aziz", password="demo12345")
+    client.force_login(user)
+    response = client.post(reverse("catalog:contact"), {"subject": "Taklif", "message": "Yaxshi loyiha!"}, follow=True)
+    assert response.status_code == 200
+    msg = ContactMessage.objects.get()
+    assert msg.pharmacy_id is None
+    assert msg.sender_id == user.id
+
+
+def test_terms_view_accessible_without_login(client, db):
+    response = client.get(reverse("catalog:terms"))
+    assert response.status_code == 200
+
+
+def test_compress_image_resizes_and_converts_to_jpeg():
+    import io
+
+    from django.core.files.uploadedfile import SimpleUploadedFile
+    from PIL import Image
+
+    from config.image_utils import compress_image
+
+    buf = io.BytesIO()
+    Image.new("RGB", (3000, 2000), color="blue").save(buf, format="PNG")
+    upload = SimpleUploadedFile("big.png", buf.getvalue(), content_type="image/png")
+
+    result = compress_image(upload, max_dimension=800)
+    assert result.name.endswith(".jpg")
+
+    out = Image.open(result)
+    assert max(out.size) <= 800
+
+
+def test_drug_save_compresses_uploaded_image(db):
+    import io
+
+    from django.core.files.uploadedfile import SimpleUploadedFile
+    from PIL import Image
+
+    substance = Substance.objects.create(name_inn="Test")
+    buf = io.BytesIO()
+    Image.new("RGB", (2000, 2000), color="red").save(buf, format="PNG")
+    upload = SimpleUploadedFile("drug.png", buf.getvalue(), content_type="image/png")
+
+    drug = Drug.objects.create(trade_name="Rasmli dori", substance=substance, image=upload)
+    drug.refresh_from_db()
+    assert drug.image.name.endswith(".jpg")
+    out = Image.open(drug.image)
+    assert max(out.size) <= 800
+    drug.image.delete(save=False)
+
+
+def test_category_detail_paginates_drug_list(client, db):
+    user = User.objects.create_user(username="aziz", password="demo12345")
+    category = Category.objects.create(name_uz="Test turkum")
+    substance = Substance.objects.create(name_inn="Test", category=category)
+    for i in range(30):
+        Drug.objects.create(trade_name=f"Dori {i:02d}", substance=substance)
+
+    client.force_login(user)
+    response = client.get(reverse("catalog:category", args=[category.slug]))
+    assert response.status_code == 200
+    assert len(response.context["drugs"]) == 24
+    assert response.context["drugs"].paginator.num_pages == 2
+
+    response2 = client.get(reverse("catalog:category", args=[category.slug]), {"page": 2})
+    assert len(response2.context["drugs"]) == 6
+
+
+def test_contact_view_blocks_rapid_repeat_messages(client, db):
+    user = User.objects.create_user(username="aziz", password="demo12345")
+    client.force_login(user)
+    client.post(reverse("catalog:contact"), {"subject": "1", "message": "birinchi"})
+    client.post(reverse("catalog:contact"), {"subject": "2", "message": "ikkinchi"})
+    assert ContactMessage.objects.count() == 1

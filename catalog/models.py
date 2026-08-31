@@ -72,6 +72,10 @@ class Drug(models.Model):
                 i += 1
                 slug = f"{base}-{i}"
             self.slug = slug
+        if self.image and not self.image._committed:
+            from config.image_utils import compress_image
+
+            self.image = compress_image(self.image, max_dimension=800)
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):

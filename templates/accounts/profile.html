@@ -5,7 +5,7 @@
 <div class="max-w-2xl mx-auto space-y-8">
 
   <div class="animate-fade-up flex items-center gap-3">
-    <span class="grid place-items-center w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-400 to-brand-600 text-white shadow-card text-lg font-bold font-display">
+    <span class="grid place-items-center w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-400 to-violet-500 text-ink-950 shadow-card text-lg font-bold font-display">
       {{ user.first_name|default:user.username|slice:":1"|upper }}
     </span>
     <div>
@@ -16,7 +16,43 @@
     </div>
   </div>
 
-  <form method="post" class="animate-fade-up rounded-2xl border border-ink-100 bg-white p-5 shadow-card" style="animation-delay:.05s">
+  <div class="animate-fade-up" style="animation-delay:.03s">
+    <h2 class="mb-3 text-sm font-semibold text-ink-500 uppercase tracking-wide flex items-center gap-1.5">{% icon 'chart' 'w-4 h-4' %} Faoliyatim</h2>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 stagger">
+      <div style="--i:0" class="hover-lift rounded-2xl glass p-4 text-center shadow-card">
+        <span class="inline-grid place-items-center w-9 h-9 rounded-lg bg-brand-50 text-brand-600 mb-1.5">{% icon 'search' 'w-4 h-4' %}</span>
+        <p class="text-xl font-extrabold text-ink-900 font-display">{{ analytics.search_count }}</p>
+        <p class="text-xs text-ink-500">qidiruv</p>
+      </div>
+      <div style="--i:1" class="hover-lift rounded-2xl glass p-4 text-center shadow-card">
+        <span class="inline-grid place-items-center w-9 h-9 rounded-lg bg-red-500/10 text-red-500 mb-1.5">{% icon 'heart-solid' 'w-4 h-4' %}</span>
+        <p class="text-xl font-extrabold text-ink-900 font-display">{{ analytics.favorite_count }}</p>
+        <p class="text-xs text-ink-500">sevimli</p>
+      </div>
+      <div style="--i:2" class="hover-lift rounded-2xl glass p-4 text-center shadow-card">
+        <span class="inline-grid place-items-center w-9 h-9 rounded-lg bg-brand-50 text-brand-600 mb-1.5">{% icon 'camera' 'w-4 h-4' %}</span>
+        <p class="text-xl font-extrabold text-ink-900 font-display">{{ analytics.scan_count }}</p>
+        <p class="text-xs text-ink-500">retsept skani</p>
+      </div>
+      <div style="--i:3" class="hover-lift rounded-2xl glass p-4 text-center shadow-card">
+        <span class="inline-grid place-items-center w-9 h-9 rounded-lg bg-amber-500/10 text-amber-400 mb-1.5">{% icon 'clock' 'w-4 h-4' %}</span>
+        <p class="text-xl font-extrabold text-ink-900 font-display">{{ analytics.member_days }}</p>
+        <p class="text-xs text-ink-500">kundan beri a'zo</p>
+      </div>
+    </div>
+    {% if analytics.top_category or analytics.scan_count %}
+      <div class="mt-2.5 flex flex-wrap gap-2 text-xs text-ink-500">
+        {% if analytics.top_category %}
+          <span class="flex items-center gap-1.5 rounded-full glass px-3 py-1.5 shadow-card">{% icon 'star-solid' 'w-3.5 h-3.5 text-amber-500' %}Eng ko'p qiziqqan turkum: <strong class="text-ink-700">{{ analytics.top_category }}</strong></span>
+        {% endif %}
+        {% if analytics.scan_count %}
+          <span class="flex items-center gap-1.5 rounded-full glass px-3 py-1.5 shadow-card">{% icon 'check-circle' 'w-3.5 h-3.5 text-brand-600' %}Retseptlardan <strong class="text-ink-700">{{ analytics.matched_count }}</strong> ta dori avtomatik aniqlangan</span>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  <form method="post" class="animate-fade-up rounded-2xl glass p-5 shadow-card" style="animation-delay:.05s">
     {% csrf_token %}
     <h2 class="mb-4 font-semibold text-ink-900 flex items-center gap-2">{% icon 'user' 'w-4.5 h-4.5 text-ink-400' %} Shaxsiy ma'lumotlar</h2>
     <div class="grid gap-4 sm:grid-cols-2">
@@ -35,7 +71,7 @@
     {% if favorites %}
       <div class="grid gap-2.5 sm:grid-cols-2 stagger">
         {% for fav in favorites %}
-          <a href="{{ fav.drug.get_absolute_url }}" style="--i:{{ forloop.counter0 }}" class="hover-lift rounded-xl border border-ink-100 bg-white p-3.5 shadow-card hover:border-brand-200">
+          <a href="{{ fav.drug.get_absolute_url }}" style="--i:{{ forloop.counter0 }}" class="hover-lift rounded-xl glass p-3.5 shadow-card hover:border-brand-200">
             <p class="font-medium text-ink-900">{{ fav.drug.trade_name }}</p>
             <p class="text-xs text-ink-500">{{ fav.drug.substance.name_inn }}</p>
           </a>
@@ -51,7 +87,7 @@
     {% if recent_searches %}
       <div class="flex flex-wrap gap-2">
         {% for q in recent_searches %}
-          <a href="{% url 'catalog:home' %}?q={{ q.query_text|urlencode }}" class="hover-lift rounded-full bg-white border border-ink-100 px-3.5 py-1.5 text-xs font-medium text-ink-600 hover:border-brand-300 hover:text-brand-700 shadow-card">{{ q.query_text }}</a>
+          <a href="{% url 'catalog:home' %}?q={{ q.query_text|urlencode }}" class="hover-lift rounded-full glass px-3.5 py-1.5 text-xs font-medium text-ink-600 hover:border-brand-300 hover:text-brand-700 shadow-card">{{ q.query_text }}</a>
         {% endfor %}
       </div>
     {% else %}
@@ -64,7 +100,7 @@
     {% if scans %}
       <div class="space-y-2">
         {% for scan in scans %}
-          <a href="{% url 'prescriptions:history' %}" class="hover-lift flex items-center justify-between rounded-xl border border-ink-100 bg-white px-4 py-3 text-sm shadow-card hover:border-brand-200">
+          <a href="{% url 'prescriptions:history' %}" class="hover-lift flex items-center justify-between rounded-xl glass px-4 py-3 text-sm shadow-card hover:border-brand-200">
             <span class="text-ink-700">Skan #{{ scan.id }}</span>
             <span class="text-ink-400">{{ scan.created_at|date:"d.m.Y H:i" }}</span>
           </a>

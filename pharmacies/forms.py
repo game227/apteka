@@ -2,7 +2,7 @@ from django import forms
 
 from catalog.models import Drug, Substance
 from config.form_utils import style_form
-from pharmacies.models import Pharmacy, PharmacyDrugPrice, PharmacyReview
+from pharmacies.models import ContactMessage, Pharmacy, PharmacyDrugPrice, PharmacyReview
 
 
 class DrugCreateForm(forms.ModelForm):
@@ -75,3 +75,15 @@ class PharmacyReviewForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         style_form(self)
         self.fields["comment"].required = False
+
+
+class ContactMessageForm(forms.ModelForm):
+    class Meta:
+        model = ContactMessage
+        fields = ["subject", "message"]
+        labels = {"subject": "Mavzu", "message": "Xabar"}
+        widgets = {"message": forms.Textarea(attrs={"rows": 4, "placeholder": "Xabaringizni shu yerga yozing..."})}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        style_form(self)

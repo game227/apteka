@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from pharmacies.models import Pharmacy, PharmacyDrugPrice, PharmacyInvite, PharmacyReview, PriceHistory
+from pharmacies.models import AuditLog, ContactMessage, Pharmacy, PharmacyDrugPrice, PharmacyInvite, PharmacyReview, PriceHistory
 
 
 class PharmacyDrugPriceInline(admin.TabularInline):
@@ -32,11 +32,28 @@ class PharmacyReviewAdmin(admin.ModelAdmin):
     list_filter = ["rating"]
 
 
+@admin.register(ContactMessage)
+class ContactMessageAdmin(admin.ModelAdmin):
+    list_display = ["pharmacy", "sender", "subject", "is_resolved", "created_at"]
+    list_filter = ["is_resolved", "pharmacy"]
+    readonly_fields = ["sender", "pharmacy", "subject", "message", "created_at"]
+
+
 @admin.register(PriceHistory)
 class PriceHistoryAdmin(admin.ModelAdmin):
     list_display = ["pharmacy", "drug", "price", "in_stock", "recorded_at"]
     list_filter = ["pharmacy"]
     readonly_fields = ["pharmacy", "drug", "price", "in_stock", "changed_by", "recorded_at"]
+
+    def has_add_permission(self, request):
+        return False
+
+
+@admin.register(AuditLog)
+class AuditLogAdmin(admin.ModelAdmin):
+    list_display = ["actor", "action", "created_at"]
+    list_filter = ["actor"]
+    readonly_fields = ["actor", "action", "created_at"]
 
     def has_add_permission(self, request):
         return False

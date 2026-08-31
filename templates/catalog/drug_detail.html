@@ -4,40 +4,67 @@
 {% block content %}
 <div class="mx-auto max-w-2xl space-y-6">
 
-  <div class="animate-fade-up flex items-start justify-between gap-4 rounded-2xl border border-ink-100 bg-white p-5 shadow-card">
+  <div class="animate-fade-up flex items-start justify-between gap-4 rounded-2xl glass p-5 shadow-card">
     <div class="flex items-start gap-3 min-w-0">
       <span class="grid place-items-center w-12 h-12 rounded-xl bg-brand-50 text-brand-600 shrink-0">{% icon 'pill' 'w-6 h-6' %}</span>
       <div class="min-w-0">
         <h1 class="text-xl sm:text-2xl font-bold text-ink-900 font-display truncate">{{ drug.trade_name }}</h1>
         <p class="text-sm text-ink-500">{{ drug.substance.name_inn }}{% if drug.manufacturer %} · {{ drug.manufacturer }}{% endif %}</p>
-        {% if drug.dosage_form %}<p class="mt-1 inline-block text-xs font-medium text-ink-500 bg-ink-50 rounded-full px-2.5 py-1">{{ drug.dosage_form }} {{ drug.dosage_strength }}</p>{% endif %}
+        {% if drug.dosage_form %}<p class="mt-1 inline-block text-xs font-medium text-ink-500 bg-ink-200 rounded-full px-2.5 py-1">{{ drug.dosage_form }} {{ drug.dosage_strength }}</p>{% endif %}
       </div>
     </div>
     <form method="post" action="{% url 'catalog:toggle_favorite' drug.id %}" class="shrink-0">
       {% csrf_token %}
-      <button class="grid place-items-center w-11 h-11 rounded-full {% if is_favorite %}bg-red-50 text-red-500{% else %}bg-ink-50 text-ink-400{% endif %} hover:scale-110 active:scale-95 transition-transform" title="Sevimlilarga qo'shish">
+      <button class="grid place-items-center w-11 h-11 rounded-full {% if is_favorite %}bg-red-500/10 text-red-500{% else %}bg-ink-200 text-ink-400{% endif %} hover:scale-110 active:scale-95 transition-transform" title="Sevimlilarga qo'shish">
         {% if is_favorite %}{% icon 'heart-solid' 'w-5 h-5' %}{% else %}{% icon 'heart' 'w-5 h-5' %}{% endif %}
       </button>
     </form>
   </div>
 
-  <div class="animate-fade-up flex items-start gap-2.5 rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-800" style="animation-delay:.05s">
+  <div class="animate-fade-up flex items-start gap-2.5 rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-300" style="animation-delay:.05s">
     {% icon 'warning' 'w-4.5 h-4.5 mt-0.5 shrink-0' %}
-    <span>Bu tibbiy maslahat emas, almashtirishdan oldin shifokor yoki farmatsevt bilan maslahatlashing.</span>
+    <span class="min-w-0">Bu tibbiy maslahat emas, almashtirishdan oldin shifokor yoki farmatsevt bilan maslahatlashing.</span>
   </div>
 
   {% if not has_location %}
-    <div id="geo-prompt" class="animate-fade-up flex items-center justify-between gap-3 rounded-xl border border-ink-100 bg-white px-4 py-3 text-sm shadow-card">
-      <span class="flex items-center gap-2 text-ink-600">{% icon 'map-pin' 'w-4.5 h-4.5 text-brand-500' %} Yaqin dorixonalarni ko'rish uchun joylashuvga ruxsat bering</span>
-      <button onclick="requestLocation()" id="geo-btn" class="shrink-0 rounded-lg bg-brand-600 px-3.5 py-1.5 text-white font-medium hover:bg-brand-700 active:scale-95 transition-all">Ruxsat berish</button>
+    <div id="geo-prompt" class="animate-fade-up rounded-xl glass px-4 py-3 text-sm shadow-card space-y-2.5">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <span class="flex items-center gap-2 text-ink-600">{% icon 'map-pin' 'w-4.5 h-4.5 text-brand-500' %} Yaqin dorixonalarni ko'rish uchun joylashuvga ruxsat bering</span>
+        <button onclick="requestLocation()" id="geo-btn" class="shrink-0 rounded-lg bg-brand-600 px-3.5 py-1.5 text-white font-medium hover:bg-brand-700 active:scale-95 transition-all">Ruxsat berish</button>
+      </div>
+      <div class="flex items-center gap-2 pt-2.5 border-t border-ink-200">
+        <span class="text-xs text-ink-400 shrink-0">yoki tumaningizni tanlang:</span>
+        <select onchange="if(this.value){const u=new URL(window.location.href);const c=this.value.split(',');u.searchParams.set('lat',c[0]);u.searchParams.set('lng',c[1]);window.location.href=u.toString();}"
+                class="flex-1 rounded-lg border border-ink-200 px-2.5 py-1.5 text-xs text-ink-700 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100">
+          <option value="">— tuman —</option>
+          <option value="41.2856,69.2034">Chilonzor</option>
+          <option value="41.3457,69.2874">Yunusobod</option>
+          <option value="41.3300,69.3197">Mirzo Ulug'bek</option>
+          <option value="41.3266,69.2306">Shayxontohur</option>
+          <option value="41.2214,69.2286">Sergeli</option>
+          <option value="41.3072,69.3406">Yashnobod</option>
+          <option value="41.3608,69.2185">Olmazor</option>
+          <option value="41.2437,69.3459">Bektemir</option>
+          <option value="41.2941,69.1975">Uchtepa</option>
+          <option value="41.2965,69.2578">Yakkasaroy</option>
+          <option value="41.3005,69.2916">Mirobod</option>
+        </select>
+      </div>
     </div>
+  {% endif %}
+
+  {% if map_points %}
+    <div class="animate-fade-up rounded-2xl overflow-hidden border border-ink-100 shadow-card" style="animation-delay:.08s">
+      <div id="pharmacy-map" style="height:280px"></div>
+    </div>
+    {{ map_points|json_script:"map-points" }}
   {% endif %}
 
   <div class="animate-fade-up" style="animation-delay:.1s">
     <h2 class="mb-3 text-sm font-semibold text-ink-500 uppercase tracking-wide">{% if has_location %}Yaqin dorixonalardagi{% else %}Barcha{% endif %} narxlar <span class="text-ink-300 font-normal normal-case">({{ prices|length }})</span></h2>
     <div class="space-y-2.5 stagger">
       {% for row in prices %}
-        <div style="--i:{{ forloop.counter0 }}" class="hover-lift flex items-center justify-between gap-3 rounded-2xl border border-ink-100 bg-white p-4 shadow-card hover:shadow-card-hover">
+        <div style="--i:{{ forloop.counter0 }}" class="hover-lift flex items-center justify-between gap-3 rounded-2xl glass p-4 shadow-card hover:shadow-card-hover">
           <div class="min-w-0">
             <a href="{{ row.pharmacy.get_absolute_url }}" class="font-semibold text-ink-900 hover:text-brand-700 transition-colors">{{ row.pharmacy.name }}</a>
             <p class="text-sm text-ink-500 truncate">{{ row.pharmacy.address }}</p>
@@ -47,12 +74,12 @@
             </p>
           </div>
           <div class="text-right shrink-0">
-            <div class="inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 {% if row.is_overpriced %}bg-red-50 text-red-700 border-red-100{% else %}bg-brand-50 text-brand-700 border-brand-100{% endif %}">
+            <div class="inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 {% if row.is_overpriced %}bg-red-500/10 text-red-400 border-red-500/20{% else %}bg-brand-50 text-brand-700 border-brand-100{% endif %}">
               {% if not row.is_overpriced %}{% icon 'check-circle' 'w-4 h-4' %}{% endif %}
               <span class="font-semibold">{{ row.price|floatformat:0 }} so'm</span>
             </div>
             {% if row.is_overpriced %}
-              <p class="mt-1 flex items-center justify-end gap-1 text-xs font-bold text-red-600">{% icon 'warning' 'w-3.5 h-3.5' %}+{{ row.deviation_pct }}% qimmat</p>
+              <p class="mt-1 flex items-center justify-end gap-1 text-xs font-bold text-red-400">{% icon 'warning' 'w-3.5 h-3.5' %}+{{ row.deviation_pct }}% qimmat</p>
             {% endif %}
           </div>
         </div>
@@ -64,12 +91,16 @@
 
   {% if price_trend|length > 1 %}
     <div class="animate-fade-up" style="animation-delay:.15s">
-      <h2 class="mb-3 text-sm font-semibold text-ink-500 uppercase tracking-wide">{% icon 'chart' 'w-4 h-4 inline -mt-1' %} Narx tarixi</h2>
-      <div class="rounded-2xl border border-ink-100 bg-white p-4 shadow-card overflow-x-auto">
+      <h2 class="mb-3 text-sm font-semibold text-ink-500 uppercase tracking-wide flex items-center gap-1.5">{% icon 'chart' 'w-4 h-4' %} Narx tarixi</h2>
+      <div class="rounded-2xl glass p-4 shadow-card mb-3">
+        <div id="price-chart"></div>
+      </div>
+      {{ price_trend|json_script:"price-trend-data" }}
+      <div class="rounded-2xl glass p-4 shadow-card overflow-x-auto">
         <table class="w-full text-sm">
           <tbody>
           {% for p in price_trend|slice:":10" %}
-            <tr class="border-b border-ink-50 last:border-0">
+            <tr class="border-b border-ink-200 last:border-0">
               <td class="py-2 text-ink-400">{{ p.recorded_at|date:"d.m.Y H:i" }}</td>
               <td class="py-2 text-right font-semibold text-ink-800">{{ p.price|floatformat:0 }} so'm</td>
             </tr>
@@ -85,7 +116,7 @@
       <h2 class="mb-3 text-lg font-bold text-ink-900 font-display">Shu ta'sir moddali boshqa variantlar</h2>
       <div class="space-y-2.5 stagger">
         {% for alt in alternatives %}
-          <a href="{{ alt.get_absolute_url }}" style="--i:{{ forloop.counter0 }}" class="hover-lift flex items-center justify-between rounded-2xl border border-ink-100 bg-white p-3.5 shadow-card hover:border-brand-200 hover:shadow-card-hover">
+          <a href="{{ alt.get_absolute_url }}" style="--i:{{ forloop.counter0 }}" class="hover-lift flex items-center justify-between rounded-2xl glass p-3.5 shadow-card hover:border-brand-200 hover:shadow-card-hover">
             <div class="min-w-0">
               <p class="font-medium text-ink-900 truncate">{{ alt.trade_name }}</p>
               <p class="text-xs text-ink-500 truncate">{{ alt.manufacturer }}</p>
@@ -135,11 +166,25 @@ function showGeoError(msg) {
   if (!el) {
     el = document.createElement('p');
     el.id = 'geo-error';
-    el.className = 'mt-2 text-xs text-red-600 flex items-center gap-1';
+    el.className = 'mt-2 text-xs text-red-400 flex items-center gap-1';
     document.getElementById('geo-prompt').insertAdjacentElement('afterend', el);
   }
   el.textContent = msg;
 }
+</script>
+{% endif %}
+{% if map_points %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  initPharmacyMap('pharmacy-map', 'map-points', {{ user_lat|default_if_none:"null" }}, {{ user_lng|default_if_none:"null" }});
+});
+</script>
+{% endif %}
+{% if price_trend|length > 1 %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  initPriceChart('price-chart', 'price-trend-data');
+});
 </script>
 {% endif %}
 {% endblock %}

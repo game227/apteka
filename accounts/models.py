@@ -14,6 +14,7 @@ class UserRole(models.TextChoices):
 class User(AbstractUser):
     role = models.CharField(max_length=20, choices=UserRole.choices, default=UserRole.USER)
     phone = models.CharField(max_length=32, blank=True)
+    accepted_terms_at = models.DateTimeField(null=True, blank=True)
     pharmacy = models.ForeignKey(
         "pharmacies.Pharmacy",
         null=True,

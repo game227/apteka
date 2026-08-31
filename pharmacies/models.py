@@ -118,6 +118,29 @@ class PharmacyInvite(models.Model):
         return self.used_by_id is None and self.expires_at > timezone.now()
 
 
+class ContactMessage(models.Model):
+    """Admin/moderatorga (pharmacy=None) yoki muayyan dorixona egasi/menejeriga
+    (pharmacy berilgan) yuboriladigan xabar."""
+
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="contact_messages"
+    )
+    pharmacy = models.ForeignKey(
+        Pharmacy, null=True, blank=True, on_delete=models.CASCADE, related_name="contact_messages"
+    )
+    subject = models.CharField(max_length=200)
+    message = models.TextField()
+    is_resolved = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        target = self.pharmacy.name if self.pharmacy_id else "Admin/Moderator"
+        return f"{target} — {self.subject}"
+
+
 class PharmacyReview(models.Model):
     pharmacy = models.ForeignKey(Pharmacy, on_delete=models.CASCADE, related_name="reviews")
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="pharmacy_reviews")
@@ -131,3 +154,23 @@ class PharmacyReview(models.Model):
 
     def __str__(self):
         return f"{self.pharmacy} — {self.rating}★"
+
+
+class AuditLog(models.Model):
+    """Admin panelida ko'rsatiladigan yengil faoliyat tarixi — kim, qachon,
+    nima qildi (dorixona/taklif/narx/xabar bilan bog'liq admin/xodim
+    harakatlari). To'liq audit tizimi emas — Django admin loglari (LogEntry)
+    bilan almashtirmaydi, faqat panelda tez ko'rinish uchun."""
+
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="audit_logs"
+    )
+    action = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name_plural = "Audit logs"
+
+    def __str__(self):
+        return f"{self.actor or 'Noma’lum'} — {self.action}"

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load ui_extras %}
+{% block title %}Foydalanish shartlari — Dori Narxlari{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-2xl space-y-5">
+  <div class="animate-fade-up text-center">
+    <span class="inline-grid place-items-center w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-400 to-violet-500 text-ink-950 shadow-card mb-3">{% icon 'shield' 'w-7 h-7' %}</span>
+    <h1 class="text-2xl font-bold text-ink-900 font-display">Foydalanish shartlari</h1>
+  </div>
+
+  <div class="animate-fade-up rounded-2xl glass p-6 shadow-card space-y-4 text-sm text-ink-700 leading-relaxed" style="animation-delay:.05s">
+    <div>
+      <h2 class="font-semibold text-ink-900 mb-1">1. Platforma nimaga xizmat qiladi</h2>
+      <p>Dori Narxlari — dorilarni turli dorixonalarda narx bo'yicha solishtirish uchun yordamchi platforma. Bu yerdagi ma'lumotlar dorixonalar va foydalanuvchilar tomonidan kiritiladi va real vaqtda o'zgarishi mumkin.</p>
+    </div>
+    <div>
+      <h2 class="font-semibold text-ink-900 mb-1">2. Tibbiy maslahat emas</h2>
+      <p>Platformadagi hech qanday ma'lumot (shu jumladan retsept skaneri natijalari) tibbiy tashxis yoki maslahat sifatida qaralmasligi kerak. Dori tanlash, almashtirish yoki qabul qilishdan oldin albatta shifokor yoki farmatsevt bilan maslahatlashing.</p>
+    </div>
+    <div>
+      <h2 class="font-semibold text-ink-900 mb-1">3. Hisob va rollar</h2>
+      <p>Ro'yxatdan o'tgan har bir foydalanuvchi o'z hisobi va unda amalga oshirilgan harakatlar uchun javobgardir. "Dorixona xodimi" roli faqat admin tomonidan yaratilgan bir martalik taklif havolasi orqali beriladi va shu dorixonaning narx ma'lumotlarini kiritish/yangilash huquqini beradi.</p>
+    </div>
+    <div>
+      <h2 class="font-semibold text-ink-900 mb-1">4. Narx va ma'lumotlar aniqligi</h2>
+      <p>Narxlarni dorixona xodimlari qo'lda kiritadi va ular real vaqtdagi narxlardan farq qilishi mumkin. Xaridga borishdan oldin narxni dorixonadan tasdiqlashingiz tavsiya etiladi.</p>
+    </div>
+    <div>
+      <h2 class="font-semibold text-ink-900 mb-1">5. Muloqot va xabarlar</h2>
+      <p>"Bog'lanish" va dorixona sahifalaridagi xabar formalari orqali yuborilgan xabarlar tegishli admin/moderator yoki dorixona menejeriga yetkaziladi. Kamsituvchi, spam yoki noqonuniy mazmundagi xabarlar taqiqlanadi va hisobingiz cheklanishiga sabab bo'lishi mumkin.</p>
+    </div>
+    <div>
+      <h2 class="font-semibold text-ink-900 mb-1">6. Shartlarga rozilik</h2>
+      <p>Ro'yxatdan o'tish orqali siz ushbu shartlarni o'qib chiqqaningizni va ularga roziligingizni tasdiqlaysiz. Shartlar vaqti-vaqti bilan yangilanishi mumkin.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
