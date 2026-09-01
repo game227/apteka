@@ -96,7 +96,11 @@ def nearby_pharmacies(lat: float | None, lng: float | None, radius_km: float | N
 @transaction.atomic
 def upsert_price(*, pharmacy: Pharmacy, drug, price, in_stock: bool, user) -> PharmacyDrugPrice:
     """Bitta (pharmacy, drug) uchun joriy narxni yangilaydi/yaratadi va
-    price_history'ga o'zgarish yozuvini qo'shadi."""
+    price_history'ga o'zgarish yozuvini qo'shadi. Narx pasaysa, shu dorini
+    sevimli qilib belgilagan foydalanuvchilarga bildirishnoma yaratiladi."""
+    existing = PharmacyDrugPrice.objects.filter(pharmacy=pharmacy, drug=drug).first()
+    old_price = existing.price if existing else None
+
     row, _created = PharmacyDrugPrice.objects.update_or_create(
         pharmacy=pharmacy, drug=drug,
         defaults={"price": price, "in_stock": in_stock, "updated_by": user},
@@ -104,4 +108,16 @@ def upsert_price(*, pharmacy: Pharmacy, drug, price, in_stock: bool, user) -> Ph
     PriceHistory.objects.create(
         pharmacy=pharmacy, drug=drug, price=price, in_stock=in_stock, changed_by=user,
     )
+
+    if old_price is not None and float(price) < float(old_price):
+        from catalog.models import Favorite, PriceDropAlert
+
+        favoriters = Favorite.objects.filter(drug=drug).exclude(user=user).values_list("user_id", flat=True)
+        PriceDropAlert.objects.bulk_create(
+            [
+                PriceDropAlert(user_id=uid, drug=drug, pharmacy=pharmacy, old_price=old_price, new_price=price)
+                for uid in favoriters
+            ]
+        )
+
     return row

@@ -18,6 +18,20 @@ if _railway_domain:
     ALLOWED_HOSTS.append(_railway_domain)
     CSRF_TRUSTED_ORIGINS.append(f"https://{_railway_domain}")
 
+# SENTRY_DSN berilmasa hech narsa qilinmaydi (lokal dev'da kerak emas).
+_sentry_dsn = os.environ.get("SENTRY_DSN")
+if _sentry_dsn:
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+
+    sentry_sdk.init(
+        dsn=_sentry_dsn,
+        integrations=[DjangoIntegration()],
+        traces_sample_rate=float(os.environ.get("SENTRY_TRACES_SAMPLE_RATE", "0.1")),
+        send_default_pii=False,
+        environment=os.environ.get("SENTRY_ENVIRONMENT", "production" if not DEBUG else "development"),
+    )
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",

@@ -18,7 +18,7 @@
 
   <div class="animate-fade-up" style="animation-delay:.03s">
     <h2 class="mb-3 text-sm font-semibold text-ink-500 uppercase tracking-wide flex items-center gap-1.5">{% icon 'chart' 'w-4 h-4' %} Faoliyatim</h2>
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 stagger">
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5 stagger">
       <div style="--i:0" class="hover-lift rounded-2xl glass p-4 text-center shadow-card">
         <span class="inline-grid place-items-center w-9 h-9 rounded-lg bg-brand-50 text-brand-600 mb-1.5">{% icon 'search' 'w-4 h-4' %}</span>
         <p class="text-xl font-extrabold text-ink-900 font-display">{{ analytics.search_count }}</p>
@@ -38,6 +38,11 @@
         <span class="inline-grid place-items-center w-9 h-9 rounded-lg bg-amber-500/10 text-amber-400 mb-1.5">{% icon 'clock' 'w-4 h-4' %}</span>
         <p class="text-xl font-extrabold text-ink-900 font-display">{{ analytics.member_days }}</p>
         <p class="text-xs text-ink-500">kundan beri a'zo</p>
+      </div>
+      <div style="--i:4" class="hover-lift rounded-2xl glass p-4 text-center shadow-card">
+        <span class="inline-grid place-items-center w-9 h-9 rounded-lg bg-violet-50 text-violet-600 mb-1.5">{% icon 'chart' 'w-4 h-4' %}</span>
+        <p class="text-xl font-extrabold text-ink-900 font-display">{{ monthly_cost|floatformat:0 }}</p>
+        <p class="text-xs text-ink-500">so'm — sevimlilar narxi</p>
       </div>
     </div>
     {% if analytics.top_category or analytics.scan_count %}
@@ -66,14 +71,41 @@
     <button type="submit" class="mt-4 rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-card hover:bg-brand-700 active:scale-[0.98] transition-all">Saqlash</button>
   </form>
 
+  {% if user.is_pharmacy_staff or user.is_platform_admin %}
+    <div class="animate-fade-up rounded-2xl glass p-5 shadow-card" style="animation-delay:.07s">
+      <h2 class="mb-1 font-semibold text-ink-900 flex items-center gap-2">{% icon 'shield' 'w-4.5 h-4.5 text-ink-400' %} Ikki bosqichli autentifikatsiya</h2>
+      {% if user.totp_enabled %}
+        <p class="text-sm text-ink-500 mb-3 flex items-center gap-1.5"><span class="text-brand-600">{% icon 'check-circle' 'w-4 h-4' %}</span>Yoqilgan — hisobingiz qo'shimcha himoyalangan.</p>
+        <details class="text-sm">
+          <summary class="cursor-pointer font-medium text-red-500 hover:underline select-none">O'chirish</summary>
+          <form method="post" action="{% url 'accounts:totp_disable' %}" class="mt-3 flex gap-2">
+            {% csrf_token %}
+            <input type="password" name="password" placeholder="Parolingiz" required class="flex-1 rounded-lg border border-ink-300 bg-white px-3 py-2 text-sm text-ink-900 focus:outline-none focus:ring-2 focus:ring-brand-300">
+            <button class="rounded-lg bg-red-500/10 text-red-500 text-sm font-medium px-3.5 py-2 hover:bg-red-500/20 transition-colors">O'chirish</button>
+          </form>
+        </details>
+      {% else %}
+        <p class="text-sm text-ink-500 mb-3">Admin/dorixona xodimi hisoblari uchun tavsiya etiladi — parolga qo'shimcha, autentifikator ilovadagi kod ham talab qilinadi.</p>
+        <a href="{% url 'accounts:totp_setup' %}" class="inline-flex items-center gap-1.5 rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-card hover:bg-brand-700 transition-colors">{% icon 'shield' 'w-4 h-4' %}Yoqish</a>
+      {% endif %}
+    </div>
+  {% endif %}
+
   <div class="animate-fade-up" style="animation-delay:.1s">
     <h2 class="mb-3 text-sm font-semibold text-ink-500 uppercase tracking-wide flex items-center gap-1.5">{% icon 'heart-solid' 'w-4 h-4 text-red-400' %} Sevimli dorilar</h2>
     {% if favorites %}
       <div class="grid gap-2.5 sm:grid-cols-2 stagger">
         {% for fav in favorites %}
-          <a href="{{ fav.drug.get_absolute_url }}" style="--i:{{ forloop.counter0 }}" class="hover-lift rounded-xl glass p-3.5 shadow-card hover:border-brand-200">
-            <p class="font-medium text-ink-900">{{ fav.drug.trade_name }}</p>
-            <p class="text-xs text-ink-500">{{ fav.drug.substance.name_inn }}</p>
+          <a href="{{ fav.drug.get_absolute_url }}" style="--i:{{ forloop.counter0 }}" class="hover-lift flex items-center justify-between gap-2 rounded-xl glass p-3.5 shadow-card hover:border-brand-200">
+            <span class="min-w-0">
+              <span class="block font-medium text-ink-900 truncate">{{ fav.drug.trade_name }}</span>
+              <span class="block text-xs text-ink-500 truncate">{{ fav.drug.substance.name_inn }}</span>
+            </span>
+            {% if fav.cheapest_price %}
+              <span class="shrink-0 text-sm font-semibold text-brand-700">{{ fav.cheapest_price|floatformat:0 }} so'm</span>
+            {% else %}
+              <span class="shrink-0 text-xs text-ink-400">narx yo'q</span>
+            {% endif %}
           </a>
         {% endfor %}
       </div>

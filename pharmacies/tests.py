@@ -2,7 +2,7 @@ import pytest
 from django.urls import reverse
 
 from accounts.models import User, UserRole
-from catalog.models import Drug, Substance
+from catalog.models import Drug, Favorite, PriceDropAlert, Substance
 from pharmacies.models import ContactMessage, Pharmacy, PharmacyDrugPrice
 from pharmacies.services import haversine_km, upsert_price
 
@@ -34,6 +34,35 @@ def test_upsert_price_updates_deviation_and_history():
     assert row2.is_overpriced is False
     assert pharmacy.prices.count() == 1
     assert pharmacy.price_history.count() == 2
+
+
+@pytest.mark.django_db
+def test_price_drop_creates_alert_for_favoriting_users_only():
+    substance = Substance.objects.create(name_inn="Test Substance")
+    drug = Drug.objects.create(trade_name="Test Drug", substance=substance)
+    pharmacy = Pharmacy.objects.create(name="Test Pharmacy", address="Test", lat=41.3, lng=69.25)
+    staff = User.objects.create_user(username="staff1", password="demo12345", role=UserRole.PHARMACY_STAFF, pharmacy=pharmacy)
+    fan = User.objects.create_user(username="fan1", password="demo12345")
+    other = User.objects.create_user(username="other1", password="demo12345")
+    Favorite.objects.create(user=fan, drug=drug)
+
+    upsert_price(pharmacy=pharmacy, drug=drug, price=10000, in_stock=True, user=staff)
+    assert PriceDropAlert.objects.count() == 0  # birinchi narx — pasayish emas
+
+    upsert_price(pharmacy=pharmacy, drug=drug, price=8000, in_stock=True, user=staff)
+    alerts = PriceDropAlert.objects.all()
+    assert alerts.count() == 1
+    alert = alerts.first()
+    assert alert.user_id == fan.id
+    assert alert.old_price == 10000
+    assert alert.new_price == 8000
+    assert alert.discount_pct == 20
+    assert not PriceDropAlert.objects.filter(user=other).exists()
+    assert not PriceDropAlert.objects.filter(user=staff).exists()
+
+    # Narx oshsa — bildirishnoma yaratilmaydi
+    upsert_price(pharmacy=pharmacy, drug=drug, price=9000, in_stock=True, user=staff)
+    assert PriceDropAlert.objects.count() == 1
 
 
 @pytest.fixture
@@ -76,6 +105,73 @@ def test_pharmacy_contact_blocks_rapid_repeat_messages(client, user, pharmacy):
 @pytest.fixture
 def staff_user(db, pharmacy):
     return User.objects.create_user(username="dilnoza", password="demo12345", role=UserRole.PHARMACY_STAFF, pharmacy=pharmacy)
+
+
+def test_staff_can_update_own_pharmacy_contact_info(client, staff_user, pharmacy):
+    client.force_login(staff_user)
+    response = client.post(
+        reverse("pharmacies:staff_contact_info_update"),
+        {"phone": "+998901234567", "telegram": "@apteka_bot", "work_hours": "08:00-22:00"},
+    )
+    assert response.status_code == 302
+    pharmacy.refresh_from_db()
+    assert pharmacy.phone == "+998901234567"
+    assert pharmacy.telegram == "@apteka_bot"
+    assert pharmacy.telegram_url == "https://t.me/apteka_bot"
+    assert pharmacy.work_hours == "08:00-22:00"
+
+
+def test_staff_contact_info_update_requires_login(client, pharmacy):
+    response = client.post(reverse("pharmacies:staff_contact_info_update"), {"phone": "123"})
+    assert response.status_code == 302
+    pharmacy.refresh_from_db()
+    assert pharmacy.phone == ""
+
+
+def test_pharmacy_qr_code_returns_png(client, user, pharmacy):
+    client.force_login(user)
+    response = client.get(reverse("pharmacies:qr", args=[pharmacy.slug]))
+    assert response.status_code == 200
+    assert response["Content-Type"] == "image/png"
+    assert response.content[:8] == b"\x89PNG\r\n\x1a\n"
+
+
+def test_pharmacy_maps_url_uses_coordinates(pharmacy):
+    assert str(pharmacy.lat) in pharmacy.maps_url
+    assert str(pharmacy.lng) in pharmacy.maps_url
+
+
+def test_pharmacy_list_search_and_sort(client, user, pharmacy):
+    far_pharmacy = Pharmacy.objects.create(name="Uzoq Apteka", address="Samarqand", lat=39.65, lng=66.97)
+    client.force_login(user)
+
+    response = client.get(reverse("pharmacies:list"))
+    assert response.status_code == 200
+    assert list(response.context["pharmacies"]) == [pharmacy, far_pharmacy]  # nomi bo'yicha (Meta.ordering)
+
+    response = client.get(reverse("pharmacies:list"), {"q": "Shifo"})
+    assert list(response.context["pharmacies"]) == [pharmacy]
+
+    response = client.get(reverse("pharmacies:list"), {"lat": 41.3, "lng": 69.25, "sort": "distance"})
+    results = list(response.context["pharmacies"])
+    assert results[0] == pharmacy  # yaqinroq birinchi
+    assert results[0].distance_km < results[1].distance_km
+
+
+def test_admin_dashboard_shows_top_drugs_and_active_pharmacies(client, staff_user, pharmacy):
+    admin = User.objects.create_superuser(username="bossadmin", email="a@a.com", password="demo12345")
+    substance = Substance.objects.create(name_inn="Test Substance")
+    popular = Drug.objects.create(trade_name="Popular Drug", substance=substance, search_hits=42)
+    Drug.objects.create(trade_name="Unsearched Drug", substance=substance, search_hits=0)
+    upsert_price(pharmacy=pharmacy, drug=popular, price=10000, in_stock=True, user=staff_user)
+    upsert_price(pharmacy=pharmacy, drug=popular, price=9000, in_stock=True, user=staff_user)
+
+    client.force_login(admin)
+    response = client.get(reverse("pharmacies:admin_dashboard"))
+    assert response.status_code == 200
+    assert list(response.context["top_drugs"]) == [popular]
+    assert list(response.context["active_pharmacies"]) == [pharmacy]
+    assert response.context["active_pharmacies"][0].price_update_count == 2
 
 
 def test_staff_can_delete_own_pharmacy_price(client, staff_user, pharmacy):

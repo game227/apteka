@@ -14,6 +14,12 @@ urlpatterns = [
     path("royxat/", views.register_view, name="register"),
     path("profil/", views.profile_view, name="profile"),
     path("xabarlar/", views.notifications_view, name="notifications"),
+    path("email-tasdiqlash/<uidb64>/<token>/", views.verify_email_view, name="verify_email"),
+    path("email-tasdiqlash/qayta-yuborish/", views.resend_verification_email_view, name="resend_verification_email"),
+    path("kirish/2fa/", views.totp_verify_view, name="totp_verify"),
+    path("2fa/yoqish/", views.totp_setup_view, name="totp_setup"),
+    path("2fa/yoqish/qr/", views.totp_qr_view, name="totp_qr"),
+    path("2fa/ochirish/", views.totp_disable_view, name="totp_disable"),
     path(
         "parol-tiklash/",
         login_not_required(

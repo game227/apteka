@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+import pyotp
 import pytest
 from django.contrib.messages import get_messages
 from django.urls import reverse
@@ -52,6 +53,87 @@ def test_login_succeeds_within_attempt_limit(client, plain_user):
     response = client.post(reverse("accounts:login"), {"username": "aziz", "password": "demo12345"})
     assert "_auth_user_id" in client.session
     cache.clear()
+
+
+@pytest.fixture
+def totp_user(db):
+    secret = pyotp.random_base32()
+    user = User.objects.create_user(username="totpuser", password="demo12345", totp_secret=secret, totp_enabled=True)
+    return user
+
+
+def test_login_with_totp_enabled_requires_second_step(client, totp_user):
+    response = client.post(reverse("accounts:login"), {"username": "totpuser", "password": "demo12345"})
+    assert response.status_code == 302
+    assert response.url == reverse("accounts:totp_verify")
+    assert "_auth_user_id" not in client.session
+    assert client.session["pre_2fa_user_id"] == totp_user.pk
+
+
+def test_totp_verify_with_correct_code_logs_in(client, totp_user):
+    client.post(reverse("accounts:login"), {"username": "totpuser", "password": "demo12345"})
+    code = pyotp.TOTP(totp_user.totp_secret).now()
+    response = client.post(reverse("accounts:totp_verify"), {"code": code})
+    assert response.status_code == 302
+    assert "_auth_user_id" in client.session
+    assert "pre_2fa_user_id" not in client.session
+
+
+def test_totp_verify_with_wrong_code_does_not_log_in(client, totp_user):
+    client.post(reverse("accounts:login"), {"username": "totpuser", "password": "demo12345"})
+    response = client.post(reverse("accounts:totp_verify"), {"code": "000000"})
+    assert "_auth_user_id" not in client.session
+    error_messages = [str(m) for m in get_messages(response.wsgi_request)]
+    assert any("noto'g'ri" in m for m in error_messages)
+
+
+def test_totp_verify_locks_out_after_5_failed_attempts(client, totp_user):
+    from django.core.cache import cache
+
+    cache.clear()
+    client.post(reverse("accounts:login"), {"username": "totpuser", "password": "demo12345"})
+    for _ in range(5):
+        client.post(reverse("accounts:totp_verify"), {"code": "000000"})
+
+    real_code = pyotp.TOTP(totp_user.totp_secret).now()
+    response = client.post(reverse("accounts:totp_verify"), {"code": real_code}, follow=True)
+    assert "_auth_user_id" not in client.session
+    error_messages = [str(m) for m in get_messages(response.wsgi_request)]
+    assert any("Juda ko'p noto'g'ri urinish" in m for m in error_messages)
+    cache.clear()
+
+
+def test_totp_setup_enables_2fa_with_correct_code(client, plain_user):
+    client.force_login(plain_user)
+    client.get(reverse("accounts:totp_setup"))
+    plain_user.refresh_from_db()
+    assert plain_user.totp_secret
+
+    code = pyotp.TOTP(plain_user.totp_secret).now()
+    response = client.post(reverse("accounts:totp_setup"), {"code": code})
+    assert response.status_code == 302
+    plain_user.refresh_from_db()
+    assert plain_user.totp_enabled is True
+
+
+def test_totp_setup_rejects_wrong_code(client, plain_user):
+    client.force_login(plain_user)
+    client.get(reverse("accounts:totp_setup"))
+    client.post(reverse("accounts:totp_setup"), {"code": "000000"})
+    plain_user.refresh_from_db()
+    assert plain_user.totp_enabled is False
+
+
+def test_totp_disable_requires_correct_password(client, totp_user):
+    client.force_login(totp_user)
+    client.post(reverse("accounts:totp_disable"), {"password": "notogri"})
+    totp_user.refresh_from_db()
+    assert totp_user.totp_enabled is True
+
+    client.post(reverse("accounts:totp_disable"), {"password": "demo12345"})
+    totp_user.refresh_from_db()
+    assert totp_user.totp_enabled is False
+    assert totp_user.totp_secret == ""
 
 
 def test_register_creates_plain_user_and_logs_in(client, db):
@@ -122,6 +204,77 @@ def test_register_sets_accepted_terms_at(client, db):
     )
     user = User.objects.get(username="roziboldi")
     assert user.accepted_terms_at is not None
+
+
+def test_register_sends_verification_email(client, db, mailoutbox):
+    client.post(
+        reverse("accounts:register"),
+        {"username": "tasdiqsiz", "first_name": "Tasdiqsiz", "email": "tasdiqsiz@example.com", "phone": "", "password1": "murakkab12345", "password2": "murakkab12345", "terms_accepted": "on"},
+    )
+    user = User.objects.get(username="tasdiqsiz")
+    assert user.email_verified is False
+    assert len(mailoutbox) == 1
+    assert "tasdiqsiz@example.com" in mailoutbox[0].to
+
+
+def _extract_verify_link(body):
+    import re
+
+    match = re.search(r"/hisob/email-tasdiqlash/([^/]+)/([^/\s]+)/", body)
+    assert match
+    return match.group(1), match.group(2)
+
+
+def test_verify_email_link_marks_verified(client, db, mailoutbox):
+    client.post(
+        reverse("accounts:register"),
+        {"username": "tasdiqla", "first_name": "Tasdiqla", "email": "tasdiqla@example.com", "phone": "", "password1": "murakkab12345", "password2": "murakkab12345", "terms_accepted": "on"},
+    )
+    uidb64, token = _extract_verify_link(mailoutbox[0].body)
+
+    response = client.get(reverse("accounts:verify_email", kwargs={"uidb64": uidb64, "token": token}))
+    assert response.status_code == 302
+    user = User.objects.get(username="tasdiqla")
+    assert user.email_verified is True
+
+
+def test_verify_email_rejects_invalid_token(client, db, mailoutbox):
+    client.post(
+        reverse("accounts:register"),
+        {"username": "notogri", "first_name": "Notogri", "email": "notogri@example.com", "phone": "", "password1": "murakkab12345", "password2": "murakkab12345", "terms_accepted": "on"},
+    )
+    uidb64, _token = _extract_verify_link(mailoutbox[0].body)
+
+    client.get(reverse("accounts:verify_email", kwargs={"uidb64": uidb64, "token": "yaroqsiz-token"}))
+    user = User.objects.get(username="notogri")
+    assert user.email_verified is False
+
+
+def test_resend_verification_email(client, plain_user, mailoutbox):
+    plain_user.email = "aziz@example.com"
+    plain_user.save(update_fields=["email"])
+    client.force_login(plain_user)
+    response = client.post(reverse("accounts:resend_verification_email"))
+    assert response.status_code == 302
+    assert len(mailoutbox) == 1
+    assert plain_user.email in mailoutbox[0].to
+
+
+def test_changing_email_resets_verification(client, plain_user, mailoutbox):
+    plain_user.email = "eski-email@example.com"
+    plain_user.email_verified = True
+    plain_user.save(update_fields=["email", "email_verified"])
+    client.force_login(plain_user)
+
+    client.post(
+        reverse("accounts:profile"),
+        {"first_name": plain_user.first_name, "last_name": "", "email": "yangi-email@example.com", "phone": ""},
+    )
+    plain_user.refresh_from_db()
+    assert plain_user.email == "yangi-email@example.com"
+    assert plain_user.email_verified is False
+    assert len(mailoutbox) == 1
+    assert "yangi-email@example.com" in mailoutbox[0].to
 
 
 def test_password_reset_sends_email_and_allows_new_password(client, db, mailoutbox):

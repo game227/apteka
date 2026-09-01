@@ -55,7 +55,21 @@ class CsvUploadForm(forms.Form):
 class PharmacyForm(forms.ModelForm):
     class Meta:
         model = Pharmacy
-        fields = ["name", "address", "lat", "lng", "phone", "work_hours"]
+        fields = ["name", "address", "lat", "lng", "phone", "telegram", "work_hours"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        style_form(self)
+
+
+class PharmacyContactInfoForm(forms.ModelForm):
+    """Dorixona xodimi o'z dorixonasining aloqa ma'lumotlarini (telefon,
+    Telegram, ish vaqti) o'zgartirishi uchun — manzil/koordinata bu yerda yo'q
+    (ular xato joylashuvga olib kelishi mumkin, faqat admin orqali)."""
+
+    class Meta:
+        model = Pharmacy
+        fields = ["phone", "telegram", "work_hours"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

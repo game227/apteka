@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% load ui_extras %}
+{% block title %}Dorixonalar — Dori Narxlari{% endblock %}
+{% block content %}
+<div class="mb-6 animate-fade-up">
+  <h1 class="text-2xl font-bold text-ink-900 font-display flex items-center gap-2">{% icon 'building' 'w-6 h-6 text-brand-600' %} Dorixonalar</h1>
+  <p class="text-ink-500 mt-1">{{ pharmacies|length }} ta dorixona — qidiring yoki saralang</p>
+</div>
+
+<form method="get" class="animate-fade-up mb-5 flex flex-col sm:flex-row gap-2.5" style="animation-delay:.02s">
+  <div class="relative flex-1">
+    <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-400">{% icon 'search' 'w-4.5 h-4.5' %}</span>
+    <input
+      type="text" name="q" value="{{ query }}"
+      placeholder="Nomi yoki manzili bo'yicha qidirish"
+      class="w-full rounded-xl border border-ink-300 bg-white pl-10 pr-4 py-2.5 text-sm text-ink-900 shadow-card focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-400 placeholder:text-ink-400">
+  </div>
+  {% if user_lat %}<input type="hidden" name="lat" value="{{ user_lat }}">{% endif %}
+  {% if user_lng %}<input type="hidden" name="lng" value="{{ user_lng }}">{% endif %}
+  <div class="flex gap-1.5 rounded-xl glass p-1 shadow-card w-fit">
+    <button type="submit" name="sort" value="distance" class="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors {% if sort == 'distance' %}bg-brand-600 text-white{% else %}text-ink-600 hover:bg-brand-50{% endif %}">Masofa</button>
+    <button type="submit" name="sort" value="rating" class="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors {% if sort == 'rating' %}bg-brand-600 text-white{% else %}text-ink-600 hover:bg-brand-50{% endif %}">Reyting</button>
+    <button type="submit" name="sort" value="name" class="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors {% if sort == 'name' %}bg-brand-600 text-white{% else %}text-ink-600 hover:bg-brand-50{% endif %}">Nomi</button>
+  </div>
+</form>
+
+{% if not has_location %}
+  <button type="button" id="locate-btn" class="animate-fade-up mb-5 flex items-center gap-2 rounded-xl border border-dashed border-brand-300 text-brand-700 text-sm font-medium px-4 py-2.5 hover:bg-brand-50 transition-colors" style="animation-delay:.03s">
+    {% icon 'map-pin' 'w-4 h-4' %} Eng yaqin dorixonalarni ko'rish uchun joylashuvni yoqing
+  </button>
+{% endif %}
+
+{% if pharmacies %}
+  <div class="animate-fade-up mb-6 rounded-2xl glass shadow-card overflow-hidden" style="animation-delay:.04s">
+    <div id="pharmacy-list-map" style="height:280px"></div>
+  </div>
+  {{ map_points|json_script:"pharmacy-list-map-points" }}
+{% endif %}
+
+<div class="grid gap-3 sm:grid-cols-2 stagger">
+  {% for p in pharmacies %}
+    <a href="{{ p.get_absolute_url }}" style="--i:{{ forloop.counter0 }}" class="hover-lift rounded-2xl glass p-5 shadow-card hover:border-brand-200 hover:shadow-card-hover">
+      <div class="flex items-start justify-between gap-2">
+        <div class="min-w-0">
+          <p class="font-semibold text-ink-900 truncate">{{ p.name }}</p>
+          <p class="text-sm text-ink-500 mt-0.5 truncate">{{ p.address }}</p>
+        </div>
+        {% if p.distance_km is not None %}
+          <span class="shrink-0 rounded-full bg-brand-50 text-brand-700 text-xs font-semibold px-2.5 py-1">{{ p.distance_km }} km</span>
+        {% endif %}
+      </div>
+      <div class="flex flex-wrap items-center gap-3 mt-3 text-xs text-ink-500">
+        <span class="flex items-center gap-1">{% icon 'clock' 'w-3.5 h-3.5' %}{{ p.work_hours }}</span>
+        {% if p.avg_rating %}
+          <span class="flex items-center gap-1 text-amber-400 font-medium">{% icon 'star-solid' 'w-3.5 h-3.5' %}{{ p.avg_rating|floatformat:1 }} <span class="text-ink-400 font-normal">({{ p.review_count }})</span></span>
+        {% endif %}
+        {% if p.phone %}<span class="flex items-center gap-1">{% icon 'phone' 'w-3.5 h-3.5' %}{{ p.phone }}</span>{% endif %}
+      </div>
+    </a>
+  {% endfor %}
+</div>
+{% if not pharmacies %}
+  <div class="animate-scale-in rounded-2xl border-2 border-dashed border-ink-300 p-10 text-center">
+    <span class="mx-auto mb-3 grid place-items-center w-12 h-12 rounded-full bg-ink-100 text-ink-400">{% icon 'building' 'w-5 h-5' %}</span>
+    <p class="text-ink-600">Qidiruvga mos dorixona topilmadi.</p>
+  </div>
+{% endif %}
+
+{% if pharmacies %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    initPharmacyMap('pharmacy-list-map', 'pharmacy-list-map-points', {{ user_lat|default_if_none:"null" }}, {{ user_lng|default_if_none:"null" }});
+  });
+</script>
+{% endif %}
+
+{% if not has_location %}
+<script>
+  (function () {
+    const btn = document.getElementById('locate-btn');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      if (!('geolocation' in navigator)) { alert("Brauzeringiz joylashuvni aniqlashni qo'llab-quvvatlamaydi."); return; }
+      btn.textContent = 'Aniqlanmoqda…';
+      navigator.geolocation.getCurrentPosition(
+        function (pos) {
+          const url = new URL(window.location.href);
+          url.searchParams.set('lat', pos.coords.latitude);
+          url.searchParams.set('lng', pos.coords.longitude);
+          url.searchParams.set('sort', 'distance');
+          window.location.href = url.toString();
+        },
+        function () {
+          btn.textContent = "Joylashuvga ruxsat berilmadi";
+        },
+        { timeout: 10000, maximumAge: 60000 }
+      );
+    });
+  })();
+</script>
+{% endif %}
+{% endblock %}

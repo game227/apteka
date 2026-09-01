@@ -1,9 +1,11 @@
 import csv
 import io
 
+import qrcode
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.db.models import Avg, Count, Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -12,9 +14,66 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from accounts.decorators import pharmacy_staff_required, platform_admin_required
 from accounts.models import User, UserRole
 from catalog.models import Drug
-from pharmacies.forms import ContactMessageForm, CsvUploadForm, DrugCreateForm, PharmacyForm, PharmacyReviewForm, PriceForm
+from pharmacies.forms import (
+    ContactMessageForm,
+    CsvUploadForm,
+    DrugCreateForm,
+    PharmacyContactInfoForm,
+    PharmacyForm,
+    PharmacyReviewForm,
+    PriceForm,
+)
 from pharmacies.models import AuditLog, ContactMessage, Pharmacy, PharmacyDrugPrice, PharmacyInvite
-from pharmacies.services import contact_message_cooldown_remaining, log_action, upsert_price
+from pharmacies.services import contact_message_cooldown_remaining, haversine_km, log_action, upsert_price
+
+
+def _parse_coords(request):
+    try:
+        return float(request.GET.get("lat")), float(request.GET.get("lng"))
+    except (TypeError, ValueError):
+        return None, None
+
+
+def pharmacy_list_view(request):
+    """Barcha dorixonalar ro'yxati — nomi/manzili bo'yicha qidiruv, masofa
+    yoki reyting bo'yicha saralash bilan."""
+    query = (request.GET.get("q") or "").strip()
+    sort = request.GET.get("sort") or ""
+    lat, lng = _parse_coords(request)
+
+    pharmacies = Pharmacy.objects.annotate(
+        avg_rating=Avg("reviews__rating"), review_count=Count("reviews", distinct=True)
+    )
+    if query:
+        pharmacies = pharmacies.filter(Q(name__icontains=query) | Q(address__icontains=query))
+    pharmacies = list(pharmacies)
+
+    for p in pharmacies:
+        p.distance_km = round(haversine_km(lat, lng, p.lat, p.lng), 2) if lat is not None else None
+
+    if sort == "rating":
+        pharmacies.sort(key=lambda p: (p.avg_rating or 0), reverse=True)
+    elif sort == "name":
+        pharmacies.sort(key=lambda p: p.name.lower())
+    elif lat is not None:
+        pharmacies.sort(key=lambda p: p.distance_km)
+
+    context = {
+        "pharmacies": pharmacies,
+        "query": query,
+        "sort": sort or ("distance" if lat is not None else ""),
+        "has_location": lat is not None,
+        "user_lat": lat,
+        "user_lng": lng,
+        "map_points": [
+            {
+                "name": p.name, "slug": p.slug, "lat": p.lat, "lng": p.lng,
+                "price": None, "distance_km": p.distance_km, "in_stock": True,
+            }
+            for p in pharmacies
+        ],
+    }
+    return render(request, "pharmacies/list.html", context)
 
 
 def pharmacy_detail_view(request, slug):
@@ -44,6 +103,18 @@ def pharmacy_detail_view(request, slug):
         "contact_form": ContactMessageForm(),
     }
     return render(request, "pharmacies/detail.html", context)
+
+
+def pharmacy_qr_view(request, slug):
+    """Dorixona sahifasiga havola bo'lgan QR kodni PNG rasm sifatida
+    qaytaradi — do'kon ichida chop etib qo'yish yoki mijozlarga ulashish
+    uchun (masalan, staff panelidan yuklab olinadi)."""
+    pharmacy = get_object_or_404(Pharmacy, slug=slug)
+    url = request.build_absolute_uri(pharmacy.get_absolute_url())
+    img = qrcode.make(url, box_size=8, border=2)
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return HttpResponse(buf.getvalue(), content_type="image/png")
 
 
 def pharmacy_contact_view(request, slug):
@@ -77,8 +148,22 @@ def staff_panel_view(request):
         "price_form": PriceForm(initial=initial),
         "csv_form": CsvUploadForm(),
         "contact_messages": pharmacy.contact_messages.select_related("sender")[:20],
+        "contact_info_form": PharmacyContactInfoForm(instance=pharmacy),
     }
     return render(request, "pharmacies/staff_panel.html", context)
+
+
+@pharmacy_staff_required
+def staff_contact_info_update_view(request):
+    if request.method == "POST":
+        form = PharmacyContactInfoForm(request.POST, instance=request.user.pharmacy)
+        if form.is_valid():
+            form.save()
+            log_action(request.user, f"“{request.user.pharmacy.name}” aloqa ma'lumotlarini yangiladi")
+            messages.success(request, "Aloqa ma'lumotlari yangilandi.")
+        else:
+            messages.error(request, "Aloqa ma'lumotlarini saqlab bo'lmadi — maydonlarni tekshiring.")
+    return redirect("pharmacies:staff_panel")
 
 
 @pharmacy_staff_required
@@ -227,6 +312,10 @@ def admin_dashboard_view(request):
             "drug_count": Drug.objects.count(),
             "staff_count": User.objects.filter(role=UserRole.PHARMACY_STAFF).count(),
         },
+        "top_drugs": Drug.objects.select_related("substance").filter(search_hits__gt=0).order_by("-search_hits")[:8],
+        "active_pharmacies": Pharmacy.objects.annotate(
+            price_update_count=Count("price_history")
+        ).filter(price_update_count__gt=0).order_by("-price_update_count")[:8],
     }
     return render(request, "pharmacies/admin_dashboard.html", context)
 

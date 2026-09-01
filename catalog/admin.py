@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from catalog.models import Category, Drug, DrugAlias, Favorite, SearchQuery, Substance
+from catalog.models import Category, Drug, DrugAlias, Favorite, PriceDropAlert, SearchQuery, Substance
 
 
 @admin.register(Category)
@@ -45,3 +45,10 @@ class FavoriteAdmin(admin.ModelAdmin):
 class SearchQueryAdmin(admin.ModelAdmin):
     list_display = ["query_text", "user", "result_count", "created_at"]
     readonly_fields = ["query_text", "user", "result_count", "created_at"]
+
+
+@admin.register(PriceDropAlert)
+class PriceDropAlertAdmin(admin.ModelAdmin):
+    list_display = ["user", "drug", "pharmacy", "old_price", "new_price", "is_read", "created_at"]
+    list_filter = ["is_read"]
+    readonly_fields = ["user", "drug", "pharmacy", "old_price", "new_price", "created_at"]

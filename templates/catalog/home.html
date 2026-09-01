@@ -4,26 +4,23 @@
 {% block content %}
 <div class="mx-auto max-w-2xl">
 
-  <div class="relative overflow-hidden rounded-3xl glass px-6 py-14 sm:py-16 text-center mb-8 animate-fade-up">
-    <div class="pointer-events-none absolute inset-0 bg-gradient-to-br from-brand-950/40 via-transparent to-violet-950/40"></div>
-    <div class="pointer-events-none absolute -top-24 -left-16 w-72 h-72 rounded-full bg-brand-400/25 blur-3xl animate-blob"></div>
-    <div class="pointer-events-none absolute -bottom-24 -right-16 w-80 h-80 rounded-full bg-violet-500/25 blur-3xl animate-blob" style="animation-delay:3s"></div>
-
-    <span class="relative inline-flex items-center gap-1.5 rounded-full bg-brand-100 text-brand-800 text-xs font-semibold px-3 py-1 mb-4 animate-glow-pulse">
+  <div class="relative overflow-hidden rounded-3xl glass px-6 py-14 sm:py-16 text-center mb-8 animate-fade-up" style="background:linear-gradient(180deg, rgb(var(--brand-tint) / .08), rgb(var(--glass-bg)));">
+    <span class="relative inline-flex items-center gap-1.5 rounded-full bg-white border border-ink-200 text-brand-700 text-xs font-semibold px-3 py-1.5 mb-4 shadow-card">
       {% icon 'shield' 'w-3.5 h-3.5' %} Ishonchli narx solishtirish
     </span>
-    <h1 class="relative font-display text-3xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-brand-300 via-brand-400 to-violet-400 bg-clip-text text-transparent animate-gradient">Dori narxlarini bir joydan solishtiring</h1>
-    <p class="relative mt-2.5 text-ink-600 max-w-md mx-auto">Yaqin atrofdagi dorixonalardan eng arzon va ishonchli narxni toping</p>
+    <h1 class="relative font-display text-3xl sm:text-4xl font-bold tracking-tight text-ink-900">Dori narxlarini bir joydan solishtiring</h1>
+    <p class="relative mt-2.5 text-ink-500 max-w-md mx-auto">Yaqin atrofdagi dorixonalardan eng arzon va ishonchli narxni toping</p>
 
-    <form method="get" class="relative mt-7 flex gap-2 max-w-lg mx-auto">
+    <form method="get" class="relative mt-7 flex gap-2 max-w-lg mx-auto" autocomplete="off">
       <div class="relative flex-1">
-        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-ink-500">{% icon 'search' 'w-5 h-5' %}</span>
+        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-ink-400">{% icon 'search' 'w-5 h-5' %}</span>
         <input
-          type="text" name="q" value="{{ query }}" autofocus
+          type="text" name="q" id="home-search-input" value="{{ query }}" autofocus
           placeholder="Masalan: Amoksiklav"
-          class="w-full rounded-2xl border border-white/10 bg-ink-100 pl-11 pr-4 py-3.5 text-base text-ink-900 shadow-glow focus:outline-none focus:ring-2 focus:ring-brand-400/60 placeholder:text-ink-500">
+          class="w-full rounded-2xl border border-ink-300 bg-white pl-11 pr-4 py-3.5 text-base text-ink-900 shadow-card focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-400 placeholder:text-ink-400">
+        <div id="search-suggestions" class="hidden absolute left-0 right-0 top-full mt-2 rounded-2xl glass shadow-card overflow-hidden text-left z-20"></div>
       </div>
-      <button class="shrink-0 rounded-2xl bg-gradient-to-br from-brand-500 to-violet-600 px-5 py-3.5 font-semibold text-ink-950 shadow-glow hover:brightness-110 active:scale-[0.97] transition-all">Qidirish</button>
+      <button class="shrink-0 rounded-2xl bg-brand-600 px-5 py-3.5 font-semibold text-white shadow-card hover:bg-brand-700 active:scale-[0.97] transition-all">Qidirish</button>
     </form>
   </div>
 
@@ -113,6 +110,54 @@
     {% endif %}
   {% endif %}
 </div>
+<script>
+(function () {
+  const input = document.getElementById('home-search-input');
+  const box = document.getElementById('search-suggestions');
+  if (!input || !box) return;
+  let timer = null;
+  let activeController = null;
+
+  input.addEventListener('input', function () {
+    const q = input.value.trim();
+    clearTimeout(timer);
+    if (q.length < 2) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+    timer = setTimeout(function () { fetchSuggestions(q); }, 220);
+  });
+
+  input.addEventListener('blur', function () {
+    setTimeout(function () { box.classList.add('hidden'); }, 150);
+  });
+  input.addEventListener('focus', function () {
+    if (box.innerHTML) box.classList.remove('hidden');
+  });
+
+  function fetchSuggestions(q) {
+    if (activeController) activeController.abort();
+    activeController = new AbortController();
+    fetch('{% url "catalog:search_suggest" %}?q=' + encodeURIComponent(q), { signal: activeController.signal })
+      .then(function (r) { return r.json(); })
+      .then(function (data) { renderSuggestions(data.results || []); })
+      .catch(function () {});
+  }
+
+  function renderSuggestions(results) {
+    if (!results.length) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+    box.innerHTML = results.map(function (r) {
+      return '<a href="' + r.url + '" class="flex items-center justify-between gap-3 px-4 py-3 hover:bg-brand-50 border-b border-ink-100 last:border-0 transition-colors">' +
+        '<span class="min-w-0"><span class="block font-medium text-ink-900 truncate">' + escapeHtml(r.trade_name) + '</span>' +
+        '<span class="block text-xs text-ink-500 truncate">' + escapeHtml(r.substance) + '</span></span></a>';
+    }).join('');
+    box.classList.remove('hidden');
+  }
+
+  function escapeHtml(s) {
+    const el = document.createElement('div');
+    el.textContent = s;
+    return el.innerHTML;
+  }
+})();
+</script>
 {% if not query and map_points %}
 <script>
 document.addEventListener('DOMContentLoaded', function () {

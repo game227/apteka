@@ -1,0 +1,7 @@
+Assalomu alaykum, {{ user.first_name|default:user.username }}!
+
+Dori Narxlari platformasida ro'yxatdan o'tganingiz uchun rahmat. Email manzilingizni tasdiqlash uchun quyidagi havolani oching:
+
+{{ link }}
+
+Agar bu siz bo'lmasangiz, shu xabarni e'tiborsiz qoldiring.

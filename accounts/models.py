@@ -23,6 +23,13 @@ class User(AbstractUser):
         related_name="staff_members",
     )
 
+    email_verified = models.BooleanField(default=False)
+
+    # Ikki bosqichli autentifikatsiya (TOTP) — faqat admin/dorixona xodimi uchun
+    # taklif etiladi, lekin maydonlar har qanday foydalanuvchida bo'lishi mumkin.
+    totp_secret = models.CharField(max_length=64, blank=True)
+    totp_enabled = models.BooleanField(default=False)
+
     @property
     def is_pharmacy_staff(self):
         return self.role == UserRole.PHARMACY_STAFF and self.pharmacy_id is not None

@@ -19,6 +19,9 @@ class Pharmacy(models.Model):
     lat = models.FloatField()
     lng = models.FloatField()
     phone = models.CharField(max_length=50, blank=True)
+    telegram = models.CharField(
+        max_length=100, blank=True, help_text="Foydalanuvchi nomi (@bilan yoki bilarsiz) yoki to'liq t.me/... havola"
+    )
     work_hours = models.CharField(max_length=100, blank=True, default="09:00–21:00")
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="created_pharmacies"
@@ -50,6 +53,21 @@ class Pharmacy(models.Model):
     def average_rating(self):
         agg = self.reviews.aggregate(models.Avg("rating"))
         return agg["rating__avg"]
+
+    @property
+    def telegram_url(self):
+        """`telegram` maydoni @username, username yoki to'liq havola sifatida
+        kiritilgan bo'lishi mumkin — bu yerda doim bosiladigan t.me havolaga aylantiriladi."""
+        value = (self.telegram or "").strip()
+        if not value:
+            return ""
+        if value.startswith("http://") or value.startswith("https://"):
+            return value
+        return f"https://t.me/{value.lstrip('@')}"
+
+    @property
+    def maps_url(self):
+        return f"https://www.google.com/maps/search/?api=1&query={self.lat},{self.lng}"
 
 
 class PharmacyDrugPrice(models.Model):

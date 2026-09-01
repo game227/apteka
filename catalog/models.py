@@ -105,6 +105,31 @@ class Favorite(models.Model):
         return f"{self.user} ♥ {self.drug}"
 
 
+class PriceDropAlert(models.Model):
+    """Sevimli dorining narxi pasayganda foydalanuvchiga ko'rsatiladigan
+    bildirishnoma — 'Xabarlar' sahifasida ko'rinadi."""
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="price_drop_alerts")
+    drug = models.ForeignKey(Drug, on_delete=models.CASCADE, related_name="price_drop_alerts")
+    pharmacy = models.ForeignKey("pharmacies.Pharmacy", on_delete=models.CASCADE, related_name="price_drop_alerts")
+    old_price = models.DecimalField(max_digits=12, decimal_places=2)
+    new_price = models.DecimalField(max_digits=12, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.user} — {self.drug} {self.old_price}→{self.new_price}"
+
+    @property
+    def discount_pct(self):
+        if not self.old_price:
+            return 0
+        return round((1 - float(self.new_price) / float(self.old_price)) * 100)
+
+
 class SearchQuery(models.Model):
     """Qidiruv tarixi — 'oxirgi qidiruvlar' va ommabop dorilar tahlili uchun."""
 

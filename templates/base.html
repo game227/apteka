@@ -5,16 +5,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Dori Narxlari{% endblock %}</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22><rect width=24 height=24 rx=6 fill=%22%2300c47d%22/><g transform=%22rotate(-45 12 12)%22 fill=%22none%22 stroke=%22%2304060a%22 stroke-width=%222.4%22 stroke-linecap=%22round%22><rect x=3 y=9 width=18 height=6 rx=3/><line x1=12 y1=7.8 x2=12 y2=16.2/></g></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22><rect width=24 height=24 rx=6 fill=%22%232c6e8c%22/><g transform=%22rotate(-45 12 12)%22 fill=%22none%22 stroke=%22%23ffffff%22 stroke-width=%222.4%22 stroke-linecap=%22round%22><rect x=3 y=9 width=18 height=6 rx=3/><line x1=12 y1=7.8 x2=12 y2=16.2/></g></svg>">
   <link rel="manifest" href="/static/manifest.json">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <meta name="theme-color" content="#00c47d">
+  <meta name="theme-color" content="#2c6e8c">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Dori Narxlari">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&family=Instrument+Sans:wght@500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/htmx.org@2.0.4"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
@@ -24,7 +24,7 @@
     // oldin, aks holda bir lahzalik noto'g'ri tema (FOUC) ko'rinib ketadi.
     (function () {
       var saved = localStorage.getItem('theme');
-      if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
+      if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
     })();
   </script>
   <script>
@@ -32,23 +32,24 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-            display: ['Manrope', 'Inter', 'sans-serif'],
+            sans: ['Public Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            display: ['Instrument Sans', 'Public Sans', 'sans-serif'],
           },
           colors: {
-            /* Neon-emerald — asosiy urg'u rang. CSS-o'zgaruvchilar orqali —
+            /* Po'lat-teal — asosiy urg'u rang. CSS-o'zgaruvchilar orqali —
                shu bilan yorug'/qorong'i almashtirgich ishlaydi (pastga q.). */
             brand: {
-              50:'rgb(var(--brand-tint) / .07)', 100:'rgb(var(--brand-tint) / .13)', 200:'rgb(var(--brand-tint) / .22)',
-              300:'rgb(var(--brand-tint) / .35)', 400:'rgb(var(--brand-400) / <alpha-value>)', 500:'rgb(var(--brand-500) / <alpha-value>)',
+              50:'rgb(var(--brand-tint) / .07)', 100:'rgb(var(--brand-tint) / .13)', 200:'rgb(var(--brand-tint) / .2)',
+              300:'rgb(var(--brand-tint) / .32)', 400:'rgb(var(--brand-400) / <alpha-value>)', 500:'rgb(var(--brand-500) / <alpha-value>)',
               600:'rgb(var(--brand-600) / <alpha-value>)', 700:'rgb(var(--brand-700) / <alpha-value>)', 800:'rgb(var(--brand-800) / <alpha-value>)',
               900:'rgb(var(--brand-900) / <alpha-value>)', 950:'rgb(var(--brand-950) / <alpha-value>)',
             },
-            /* Elektr-binafsha — ikkinchi urg'u/gradient juftlik (ikkala temada bir xil) */
+            /* Chuqur ko'k-shifer — ikkinchi urg'u/gradient juftlik, temaga qarab almashadi */
             violet: {
-              50:'#f5f0ff', 100:'#e7d9ff', 200:'#d1b3ff', 300:'#b483ff',
-              400:'#9a5cff', 500:'#8438f5', 600:'#7226dd', 700:'#5f1cb8',
-              800:'#4c1794', 900:'#3a1170', 950:'#22084a',
+              50:'rgb(var(--violet-tint) / .07)', 100:'rgb(var(--violet-tint) / .13)', 200:'rgb(var(--violet-tint) / .2)',
+              300:'rgb(var(--violet-tint) / .32)', 400:'rgb(var(--violet-400) / <alpha-value>)', 500:'rgb(var(--violet-500) / <alpha-value>)',
+              600:'rgb(var(--violet-600) / <alpha-value>)', 700:'rgb(var(--violet-600) / <alpha-value>)', 800:'rgb(var(--violet-600) / <alpha-value>)',
+              900:'rgb(var(--violet-600) / <alpha-value>)', 950:'rgb(var(--violet-600) / <alpha-value>)',
             },
             /* Neytral shkala — CSS-o'zgaruvchilar orqali, tema bilan almashadi */
             ink: {
@@ -59,10 +60,10 @@
             },
           },
           boxShadow: {
-            card: '0 1px 1px rgba(0,0,0,.35), 0 8px 24px -10px rgba(0,0,0,.4)',
-            'card-hover': '0 4px 18px -2px rgba(0,232,150,.18), 0 14px 34px -10px rgba(0,0,0,.5)',
-            glow: '0 0 0 1px rgba(0,232,150,.25), 0 0 28px -2px rgba(0,232,150,.45)',
-            'glow-violet': '0 0 0 1px rgba(132,56,245,.3), 0 0 28px -2px rgba(132,56,245,.5)',
+            card: '0 1px 2px rgba(15,23,27,.04), 0 8px 20px -12px rgba(15,23,27,.12)',
+            'card-hover': '0 4px 16px -4px rgba(44,110,140,.16), 0 14px 30px -14px rgba(15,23,27,.16)',
+            glow: '0 4px 14px -4px rgba(44,110,140,.32), 0 1px 2px rgba(15,23,27,.06)',
+            'glow-violet': '0 4px 14px -4px rgba(55,77,97,.32), 0 1px 2px rgba(15,23,27,.06)',
           },
           spacing: {
             '4.5': '1.125rem',
@@ -72,52 +73,54 @@
     }
   </script>
   <style>
-    /* --- Tema o'zgaruvchilari: qorong'i (standart) --- */
+    /* --- Tema o'zgaruvchilari: yorug' (standart — Ishonch va professionallik) --- */
     :root {
-      --ink-50: 4 6 10; --ink-100: 10 14 21; --ink-200: 18 23 31; --ink-300: 28 34 45;
-      --ink-400: 69 78 96; --ink-500: 107 116 136; --ink-600: 143 151 168; --ink-700: 179 185 198;
-      --ink-800: 214 218 226; --ink-900: 240 242 245; --ink-950: 255 255 255;
-      --brand-400: 0 232 150; --brand-500: 0 217 141; --brand-600: 0 196 125;
-      --brand-700: 51 230 163; --brand-800: 125 255 196; --brand-900: 184 255 224; --brand-950: 230 255 245;
-      --brand-tint: 0 232 150;
-      --page-bg: 4 6 10;
-      --glass-bg: 255 255 255; --glass-bg-alpha: .035;
-      --glass-border: 255 255 255; --glass-border-alpha: .09;
-      --glass-hover-bg-alpha: .06;
-      --select-bg: #00c47d; --select-fg: #04060a;
-      color-scheme: dark;
-    }
-    /* --- Tema o'zgaruvchilari: yorug' (almashtirgich orqali) --- */
-    :root[data-theme="light"] {
-      --ink-50: 246 247 249; --ink-100: 236 238 242; --ink-200: 213 217 225; --ink-300: 176 184 196;
-      --ink-400: 135 145 163; --ink-500: 104 114 138; --ink-600: 82 92 114; --ink-700: 67 75 93;
-      --ink-800: 57 63 78; --ink-900: 34 38 47; --ink-950: 12 14 18;
-      --brand-400: 63 201 148; --brand-500: 28 173 124; --brand-600: 15 143 104;
-      --brand-700: 13 114 86; --brand-800: 14 90 70; --brand-900: 12 74 58; --brand-950: 5 46 36;
-      --brand-tint: 15 143 104;
-      --page-bg: 246 247 249;
-      --glass-bg: 255 255 255; --glass-bg-alpha: .75;
-      --glass-border: 15 23 42; --glass-border-alpha: .08;
-      --glass-hover-bg-alpha: .95;
-      --select-bg: #0f8f68; --select-fg: #f6f7f9;
+      --ink-50: 244 247 246; --ink-100: 233 240 239; --ink-200: 225 232 230; --ink-300: 207 219 217;
+      --ink-400: 123 138 136; --ink-500: 77 90 95; --ink-600: 61 72 76; --ink-700: 45 54 57;
+      --ink-800: 28 34 36; --ink-900: 18 24 27; --ink-950: 255 255 255;
+      --brand-400: 63 137 168; --brand-500: 44 110 140; --brand-600: 36 88 111;
+      --brand-700: 31 78 99; --brand-800: 23 58 74; --brand-900: 15 37 48; --brand-950: 8 16 22;
+      --brand-tint: 44 110 140;
+      --violet-400: 91 122 148; --violet-500: 55 77 97; --violet-600: 39 56 71;
+      --violet-tint: 55 77 97;
+      --page-bg: 244 247 246;
+      --glass-bg: 255 255 255; --glass-bg-alpha: 1;
+      --glass-border: 18 24 27; --glass-border-alpha: .08;
+      --glass-hover-bg-alpha: 1;
+      --select-bg: #2c6e8c; --select-fg: #ffffff;
       color-scheme: light;
+    }
+    /* --- Tema o'zgaruvchilari: qorong'i (almashtirgich orqali, neon emas — chuqur ko'k-teal) --- */
+    :root[data-theme="dark"] {
+      --ink-50: 10 20 24; --ink-100: 16 28 32; --ink-200: 26 42 47; --ink-300: 36 55 61;
+      --ink-400: 90 108 113; --ink-500: 130 152 156; --ink-600: 158 178 181; --ink-700: 184 200 202;
+      --ink-800: 212 224 225; --ink-900: 232 238 240; --ink-950: 255 255 255;
+      --brand-400: 58 149 181; --brand-500: 74 165 197; --brand-600: 44 110 140;
+      --brand-700: 130 200 220; --brand-800: 170 220 232; --brand-900: 210 238 244; --brand-950: 230 248 250;
+      --brand-tint: 74 165 197;
+      --violet-400: 130 160 185; --violet-500: 95 130 158; --violet-600: 150 175 195;
+      --violet-tint: 95 130 158;
+      --page-bg: 10 20 24;
+      --glass-bg: 16 28 32; --glass-bg-alpha: 1;
+      --glass-border: 255 255 255; --glass-border-alpha: .08;
+      --glass-hover-bg-alpha: 1;
+      --select-bg: #4aa5c5; --select-fg: #0a1418;
+      color-scheme: dark;
     }
 
     html { scroll-behavior: smooth; }
-    body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
-    .font-display { font-family: 'Manrope', 'Inter', sans-serif; }
+    body { font-family: 'Public Sans', ui-sans-serif, system-ui, sans-serif; }
+    .font-display { font-family: 'Instrument Sans', 'Public Sans', sans-serif; }
     ::selection { background-color: var(--select-bg); color: var(--select-fg); }
     [x-cloak] { display: none !important; }
 
-    /* --- Shisha (glassmorphism) sirt --- */
+    /* --- Karta sirti (oq/quyuq, shaffof emas — Ishonch yo'nalishi) --- */
     .glass {
       background: rgb(var(--glass-bg) / var(--glass-bg-alpha));
-      -webkit-backdrop-filter: blur(20px);
-      backdrop-filter: blur(20px);
       border: 1px solid rgb(var(--glass-border) / var(--glass-border-alpha));
     }
     .glass-hover { transition: background-color .2s ease, border-color .2s ease, transform .2s cubic-bezier(.22,1,.36,1), box-shadow .2s ease; }
-    .glass-hover:hover { background: rgb(var(--glass-bg) / var(--glass-hover-bg-alpha)); border-color: rgb(var(--brand-tint) / .35); }
+    .glass-hover:hover { border-color: rgb(var(--brand-tint) / .4); box-shadow: 0 4px 14px -6px rgb(var(--brand-tint) / .3); }
 
     /* --- Animatsiya tizimi --- */
     @keyframes fade-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
@@ -149,11 +152,11 @@
 
     .nav-link { position: relative; }
     .nav-link::after { content:''; position:absolute; left:12px; right:12px; bottom:2px; height:2px; border-radius:2px;
-      background: linear-gradient(90deg, #00e896, #8438f5); transform: scaleX(0); transform-origin: left; transition: transform .25s cubic-bezier(.22,1,.36,1); }
+      background: linear-gradient(90deg, #2c6e8c, #374d61); transform: scaleX(0); transform-origin: left; transition: transform .25s cubic-bezier(.22,1,.36,1); }
     .nav-link:hover::after { transform: scaleX(1); }
 
     .star-rating input { position:absolute; opacity:0; width:0; height:0; }
-    .star-rating label { cursor:pointer; color:#2a3140; font-size:1.9rem; line-height:1; transition: color .15s ease, transform .15s ease; }
+    .star-rating label { cursor:pointer; color:rgb(var(--ink-300)); font-size:1.9rem; line-height:1; transition: color .15s ease, transform .15s ease; }
     .star-rating label:hover { transform: scale(1.15); }
     .star-rating input:checked ~ label,
     .star-rating label:hover,
@@ -168,22 +171,14 @@
       .bg-ambient { display: none; }
     }
 
-    /* --- Butun sayt bo'ylab ambient orqa fon: chiziqli tarmoq + suzuvchi neon shar'lar --- */
+    /* --- Butun sayt bo'ylab ambient orqa fon: juda nozik, tinch shar'lar
+       (neon panjara yo'q — "Ishonch va professionallik" yo'nalishi tinchroq) --- */
     .bg-ambient { position: fixed; inset: 0; z-index: -10; overflow: hidden; pointer-events: none; background: rgb(var(--page-bg)); }
-    .bg-ambient .grid-lines {
-      position: absolute; inset: -20%;
-      background-image:
-        linear-gradient(rgba(0,232,150,.055) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,232,150,.055) 1px, transparent 1px);
-      background-size: 48px 48px;
-      -webkit-mask-image: radial-gradient(ellipse 65% 50% at 50% 0%, black 25%, transparent 100%);
-      mask-image: radial-gradient(ellipse 65% 50% at 50% 0%, black 25%, transparent 100%);
-      animation: grid-pan 6s linear infinite;
-    }
-    .bg-ambient .orb { position: absolute; border-radius: 9999px; filter: blur(90px); mix-blend-mode: screen; }
-    .bg-ambient .orb-1 { width: 30rem; height: 30rem; top: -10rem; left: -8rem; background: radial-gradient(circle, rgba(0,232,150,.4), transparent 70%); animation: blob 22s ease-in-out infinite; }
-    .bg-ambient .orb-2 { width: 26rem; height: 26rem; top: 18rem; right: -10rem; background: radial-gradient(circle, rgba(132,56,245,.35), transparent 70%); animation: blob 26s ease-in-out infinite; animation-delay: -8s; }
-    .bg-ambient .orb-3 { width: 22rem; height: 22rem; bottom: -8rem; left: 25%; background: radial-gradient(circle, rgba(0,180,255,.28), transparent 70%); animation: blob 30s ease-in-out infinite; animation-delay: -15s; }
+    .bg-ambient .grid-lines { display: none; }
+    .bg-ambient .orb { position: absolute; border-radius: 9999px; filter: blur(110px); opacity: .5; }
+    .bg-ambient .orb-1 { width: 30rem; height: 30rem; top: -12rem; left: -8rem; background: radial-gradient(circle, rgb(var(--brand-tint) / .16), transparent 70%); animation: blob 26s ease-in-out infinite; }
+    .bg-ambient .orb-2 { width: 26rem; height: 26rem; top: 14rem; right: -10rem; background: radial-gradient(circle, rgb(var(--violet-tint) / .12), transparent 70%); animation: blob 30s ease-in-out infinite; animation-delay: -10s; }
+    .bg-ambient .orb-3 { width: 20rem; height: 20rem; bottom: -8rem; left: 30%; background: radial-gradient(circle, rgb(var(--brand-tint) / .1), transparent 70%); animation: blob 34s ease-in-out infinite; animation-delay: -18s; }
   </style>
   {% block extra_head %}{% endblock %}
 </head>
@@ -193,6 +188,11 @@
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
     <div class="orb orb-3"></div>
+  </div>
+
+  <div id="nav-progress" class="fixed top-0 left-0 h-0.5 bg-brand-500 z-50" style="width:0%; opacity:0; transition:width .3s ease, opacity .2s ease;"></div>
+  <div id="wake-banner" class="hidden fixed top-0 left-0 right-0 z-40 bg-brand-600 text-white text-sm text-center py-2 px-4">
+    Server uyg'onmoqda — bu birinchi so'rovda 30-50 soniya vaqt olishi mumkin (bepul reja tufayli)
   </div>
 
   <header class="glass border-x-0 border-t-0 sticky top-0 z-30">
@@ -208,6 +208,7 @@
         <nav class="hidden md:flex items-center gap-1 text-sm font-medium">
           <a href="{% url 'catalog:home' %}" class="nav-link px-3 py-2 rounded-lg text-ink-600 hover:text-brand-700 hover:bg-brand-50 transition-colors">Qidiruv</a>
           <a href="{% url 'catalog:category_list' %}" class="nav-link px-3 py-2 rounded-lg text-ink-600 hover:text-brand-700 hover:bg-brand-50 transition-colors">Turkumlar</a>
+          <a href="{% url 'pharmacies:list' %}" class="nav-link px-3 py-2 rounded-lg text-ink-600 hover:text-brand-700 hover:bg-brand-50 transition-colors">Dorixonalar</a>
           {% if user.is_authenticated %}
             <a href="{% url 'prescriptions:upload' %}" class="nav-link px-3 py-2 rounded-lg text-ink-600 hover:text-brand-700 hover:bg-brand-50 transition-colors">Retsept</a>
             {% if user.is_pharmacy_staff %}
@@ -260,6 +261,7 @@
         </button>
         <a href="{% url 'catalog:home' %}" class="block px-3 py-2 rounded-lg text-sm font-medium text-ink-700 hover:bg-brand-50">Qidiruv</a>
         <a href="{% url 'catalog:category_list' %}" class="block px-3 py-2 rounded-lg text-sm font-medium text-ink-700 hover:bg-brand-50">Turkumlar</a>
+        <a href="{% url 'pharmacies:list' %}" class="block px-3 py-2 rounded-lg text-sm font-medium text-ink-700 hover:bg-brand-50">Dorixonalar</a>
         {% if user.is_authenticated %}
           <a href="{% url 'prescriptions:upload' %}" class="block px-3 py-2 rounded-lg text-sm font-medium text-ink-700 hover:bg-brand-50">Retsept</a>
           {% if user.is_pharmacy_staff %}<a href="{% url 'pharmacies:staff_panel' %}" class="block px-3 py-2 rounded-lg text-sm font-medium text-ink-700 hover:bg-brand-50">Dorixona paneli</a>{% endif %}
@@ -294,6 +296,15 @@
             <span class="min-w-0">{{ message }}</span>
           </div>
         {% endfor %}
+      </div>
+    {% endif %}
+    {% if user.is_authenticated and not user.email_verified %}
+      <div class="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-500/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-500">
+        <span class="flex items-center gap-2 min-w-0">{% icon 'warning' 'w-4.5 h-4.5 shrink-0' %}Email manzilingiz hali tasdiqlanmagan.</span>
+        <form method="post" action="{% url 'accounts:resend_verification_email' %}" class="shrink-0">
+          {% csrf_token %}
+          <button class="font-semibold hover:underline">Tasdiqlash havolasini qayta yuborish</button>
+        </form>
       </div>
     {% endif %}
     {% block content %}{% endblock %}
@@ -447,27 +458,61 @@
       }
     }
 
-    // Yorug'/qorong'i tema almashtirgichi. Qorong'i — standart; tanlov
+    // Yorug'/qorong'i tema almashtirgichi. Yorug' — standart; tanlov
     // localStorage'da saqlanadi va keyingi tashriflarda saqlanib qoladi.
     function toggleTheme() {
-      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-      if (isLight) {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if (isDark) {
         document.documentElement.removeAttribute('data-theme');
-        localStorage.setItem('theme', 'dark');
-      } else {
-        document.documentElement.setAttribute('data-theme', 'light');
         localStorage.setItem('theme', 'light');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
       }
       updateThemeIcons();
     }
 
     function updateThemeIcons() {
-      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-      document.querySelectorAll('[id^="theme-icon-dark"]').forEach(function (el) { el.classList.toggle('hidden', isLight); });
-      document.querySelectorAll('[id^="theme-icon-light"]').forEach(function (el) { el.classList.toggle('hidden', !isLight); });
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      document.querySelectorAll('[id^="theme-icon-dark"]').forEach(function (el) { el.classList.toggle('hidden', isDark); });
+      document.querySelectorAll('[id^="theme-icon-light"]').forEach(function (el) { el.classList.toggle('hidden', !isDark); });
     }
 
     document.addEventListener('DOMContentLoaded', updateThemeIcons);
+
+    // Sahifa almashtirish paytida yengil yuklanish chizig'i — Render'ning
+    // bepul rejasi harakatsizlikdan keyin "uxlab qolgani" uchun birinchi
+    // so'rov sekin bo'lishi mumkin, shu payt foydalanuvchiga tushunarli bo'lsin.
+    (function () {
+      const bar = document.getElementById('nav-progress');
+      const wakeBanner = document.getElementById('wake-banner');
+      if (!bar) return;
+      let wakeTimer = null;
+
+      function startProgress() {
+        bar.style.opacity = '1';
+        bar.style.width = '0%';
+        requestAnimationFrame(function () { bar.style.width = '70%'; });
+        wakeTimer = setTimeout(function () {
+          if (wakeBanner) wakeBanner.classList.remove('hidden');
+        }, 2500);
+      }
+
+      document.addEventListener('click', function (e) {
+        const a = e.target.closest('a[href]');
+        if (!a || a.target === '_blank' || a.href.indexOf('#') === 0) return;
+        const url = new URL(a.href, window.location.href);
+        if (url.origin !== window.location.origin) return;
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        startProgress();
+      });
+      document.addEventListener('submit', function (e) {
+        if (e.target.tagName === 'FORM' && e.target.method.toLowerCase() !== 'get') startProgress();
+      });
+      window.addEventListener('pagehide', function () {
+        clearTimeout(wakeTimer);
+      });
+    })();
 
     // Taklif havolasini (yoki istalgan matnni) buferga nusxalash — tugma
     // matnini vaqtincha "Nusxalandi!" ga o'zgartirib fikr-mulohaza beradi.

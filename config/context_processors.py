@@ -23,10 +23,12 @@ def notification_badge(request):
     'accounts:notifications' sahifasiga olib boradi (profil emas)."""
     if not request.user.is_authenticated:
         return {}
+    from catalog.models import PriceDropAlert
     from pharmacies.models import ContactMessage
 
     if request.user.is_pharmacy_staff:
         count = ContactMessage.objects.filter(pharmacy=request.user.pharmacy, is_resolved=False).count()
     else:
         count = ContactMessage.objects.filter(sender=request.user, is_resolved=False).count()
+        count += PriceDropAlert.objects.filter(user=request.user, is_read=False).count()
     return {"notification_count": count, "notification_url": reverse("accounts:notifications")}
