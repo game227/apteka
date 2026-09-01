@@ -150,7 +150,8 @@ def totp_setup_view(request):
             return redirect("accounts:profile")
         messages.error(request, "Kod noto'g'ri. Autentifikator ilovadagi joriy 6 xonali kodni kiriting.")
 
-    return render(request, "accounts/totp_setup.html", {"secret": user.totp_secret})
+    provisioning_uri = pyotp.TOTP(user.totp_secret).provisioning_uri(name=user.email or user.username, issuer_name="Dori Narxlari")
+    return render(request, "accounts/totp_setup.html", {"secret": user.totp_secret, "provisioning_uri": provisioning_uri})
 
 
 def totp_qr_view(request):
