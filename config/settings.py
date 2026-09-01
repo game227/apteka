@@ -32,6 +32,20 @@ if _sentry_dsn:
         environment=os.environ.get("SENTRY_ENVIRONMENT", "production" if not DEBUG else "development"),
     )
 
+# Production'da (DEBUG=False) HTTPS va cookie xavfsizligini qattiqlashtiradi.
+# Lokal dev'da (oddiy http://localhost) bu majburiy HTTPS'ga aylanib
+# ishlashni buzmasligi uchun faqat DEBUG=False bo'lganda yoqiladi.
+# Render (va shunga o'xshash) proxy orqasida ishlaganda so'rov aslida
+# HTTPS orqali kelganini SECURE_PROXY_SSL_HEADER orqali bilib oladi.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 60 * 60 * 24 * 7  # 1 hafta — muammo bo'lmasa keyin oshirish mumkin
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -40,6 +54,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.humanize",
+    "django.contrib.sitemaps",
     "accounts",
     "catalog",
     "pharmacies",

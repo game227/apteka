@@ -19,6 +19,7 @@ def _parse_coords(request):
         return None, None
 
 
+@login_not_required
 def home_view(request):
     query = (request.GET.get("q") or "").strip()
     results = []
@@ -58,6 +59,7 @@ def home_view(request):
     return render(request, "catalog/home.html", context)
 
 
+@login_not_required
 def search_suggest_view(request):
     query = (request.GET.get("q") or "").strip()
     if len(query) < 2:
@@ -73,11 +75,13 @@ def search_suggest_view(request):
     )
 
 
+@login_not_required
 def category_list_view(request):
     categories = Category.objects.prefetch_related("substances")
     return render(request, "catalog/category_list.html", {"categories": categories})
 
 
+@login_not_required
 def category_detail_view(request, slug):
     category = get_object_or_404(Category, slug=slug)
     drugs = Drug.objects.select_related("substance").filter(substance__category=category)
@@ -86,6 +90,7 @@ def category_detail_view(request, slug):
     return render(request, "catalog/category_detail.html", {"category": category, "drugs": page})
 
 
+@login_not_required
 def drug_detail_view(request, slug):
     drug = get_object_or_404(Drug.objects.select_related("substance"), slug=slug)
     Drug.objects.filter(pk=drug.pk).update(search_hits=drug.search_hits + 1)
@@ -144,6 +149,7 @@ def toggle_favorite_view(request, drug_id):
     return redirect(request.META.get("HTTP_REFERER") or drug.get_absolute_url())
 
 
+@login_not_required
 def about_view(request):
     return render(request, "catalog/about.html")
 

@@ -3,9 +3,46 @@ bo'lmasdan (CSP/CDN'siz), oddiy SVG primitivlar orqali. Har bir shablonda
 qo'lda SVG yozish o'rniga: {% icon 'heart' 'w-5 h-5' %}"""
 
 from django import template
+from django.utils import timezone
 from django.utils.safestring import mark_safe
 
 register = template.Library()
+
+
+@register.filter
+def uz_timesince(value):
+    """Django'ning ichki timesince/naturaltime filtrlari inglizcha chiqadi
+    (o'zbekcha tarjima katalogi yo'q) — shu sabab narx qachon yangilanganini
+    foydalanuvchiga ko'rsatish uchun o'zimizning oddiy o'zbekcha versiyasi."""
+    if not value:
+        return ""
+    delta = timezone.now() - value
+    seconds = delta.total_seconds()
+    if seconds < 60:
+        return "hozirgina"
+    minutes = int(seconds // 60)
+    if minutes < 60:
+        return f"{minutes} daqiqa oldin"
+    hours = int(seconds // 3600)
+    if hours < 24:
+        return f"{hours} soat oldin"
+    days = int(seconds // 86400)
+    if days < 30:
+        return f"{days} kun oldin"
+    months = int(days // 30)
+    if months < 12:
+        return f"{months} oy oldin"
+    years = int(days // 365)
+    return f"{years} yil oldin"
+
+
+@register.filter
+def is_price_stale(value, days=30):
+    """Narx shu necha kundan beri yangilanmagan bo'lsa True — ro'yxatda
+    "eskirgan bo'lishi mumkin" belgisini ko'rsatish uchun."""
+    if not value:
+        return False
+    return (timezone.now() - value).days >= days
 
 _ICONS = {
     "search": '<circle cx="10.5" cy="10.5" r="6.5"/><line x1="20" y1="20" x2="15.3" y2="15.3"/>',

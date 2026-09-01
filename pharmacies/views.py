@@ -3,7 +3,7 @@ import io
 
 import qrcode
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_not_required
 from django.core.paginator import Paginator
 from django.db.models import Avg, Count, Q
 from django.http import HttpResponse
@@ -34,6 +34,7 @@ def _parse_coords(request):
         return None, None
 
 
+@login_not_required
 def pharmacy_list_view(request):
     """Barcha dorixonalar ro'yxati — nomi/manzili bo'yicha qidiruv, masofa
     yoki reyting bo'yicha saralash bilan."""
@@ -76,6 +77,7 @@ def pharmacy_list_view(request):
     return render(request, "pharmacies/list.html", context)
 
 
+@login_not_required
 def pharmacy_detail_view(request, slug):
     pharmacy = get_object_or_404(Pharmacy, slug=slug)
     prices = pharmacy.prices.select_related("drug", "drug__substance").order_by("drug__trade_name")
@@ -105,6 +107,7 @@ def pharmacy_detail_view(request, slug):
     return render(request, "pharmacies/detail.html", context)
 
 
+@login_not_required
 def pharmacy_qr_view(request, slug):
     """Dorixona sahifasiga havola bo'lgan QR kodni PNG rasm sifatida
     qaytaradi — do'kon ichida chop etib qo'yish yoki mijozlarga ulashish

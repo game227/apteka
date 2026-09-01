@@ -60,7 +60,7 @@
     <div class="overflow-x-auto rounded-2xl glass shadow-card">
       <table class="w-full text-sm">
         <thead class="bg-ink-200/70 text-left text-ink-500">
-          <tr><th class="px-4 py-3 font-medium">Dori</th><th class="px-4 py-3 font-medium">Narx</th><th class="px-4 py-3 font-medium">Mavjudligi</th></tr>
+          <tr><th class="px-4 py-3 font-medium">Dori</th><th class="px-4 py-3 font-medium">Narx</th><th class="px-4 py-3 font-medium">Mavjudligi</th><th class="px-4 py-3 font-medium">Yangilangan</th></tr>
         </thead>
         <tbody class="divide-y divide-ink-200">
           {% for row in prices %}
@@ -71,9 +71,12 @@
                 {% if row.in_stock %}<span class="inline-flex items-center gap-1 text-brand-700 text-xs font-medium bg-brand-50 rounded-full px-2 py-0.5">{% icon 'check-circle' 'w-3.5 h-3.5' %}Bor</span>
                 {% else %}<span class="text-ink-400 text-xs">Yo'q</span>{% endif %}
               </td>
+              <td class="px-4 py-3 text-xs {% if row.updated_at|is_price_stale %}text-amber-500 font-medium{% else %}text-ink-400{% endif %}" title="{{ row.updated_at|date:'d.m.Y H:i' }}">
+                {{ row.updated_at|uz_timesince }}
+              </td>
             </tr>
           {% empty %}
-            <tr><td colspan="3" class="px-4 py-10 text-center text-ink-400">Hali narx kiritilmagan.</td></tr>
+            <tr><td colspan="4" class="px-4 py-10 text-center text-ink-400">Hali narx kiritilmagan.</td></tr>
           {% endfor %}
         </tbody>
       </table>

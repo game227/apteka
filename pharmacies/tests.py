@@ -141,6 +141,23 @@ def test_pharmacy_maps_url_uses_coordinates(pharmacy):
     assert str(pharmacy.lng) in pharmacy.maps_url
 
 
+def test_pharmacy_list_accessible_without_login(client, pharmacy):
+    response = client.get(reverse("pharmacies:list"))
+    assert response.status_code == 200
+
+
+def test_pharmacy_detail_accessible_without_login(client, pharmacy):
+    response = client.get(pharmacy.get_absolute_url())
+    assert response.status_code == 200
+    assert response.context["review_form"] is None
+
+
+def test_pharmacy_qr_accessible_without_login(client, pharmacy):
+    response = client.get(reverse("pharmacies:qr", args=[pharmacy.slug]))
+    assert response.status_code == 200
+    assert response["Content-Type"] == "image/png"
+
+
 def test_pharmacy_list_search_and_sort(client, user, pharmacy):
     far_pharmacy = Pharmacy.objects.create(name="Uzoq Apteka", address="Samarqand", lat=39.65, lng=66.97)
     client.force_login(user)

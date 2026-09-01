@@ -92,6 +92,32 @@ def test_terms_view_accessible_without_login(client, db):
     assert response.status_code == 200
 
 
+def test_home_view_accessible_without_login(client, db):
+    response = client.get(reverse("catalog:home"))
+    assert response.status_code == 200
+
+
+def test_drug_detail_accessible_without_login(client, seeded_drugs):
+    drug = Drug.objects.first()
+    response = client.get(drug.get_absolute_url())
+    assert response.status_code == 200
+    assert response.context["is_favorite"] is False
+
+
+def test_category_list_and_search_suggest_accessible_without_login(client, db):
+    response = client.get(reverse("catalog:category_list"))
+    assert response.status_code == 200
+    response2 = client.get(reverse("catalog:search_suggest"), {"q": "am"})
+    assert response2.status_code == 200
+
+
+def test_toggle_favorite_still_requires_login(client, seeded_drugs):
+    drug = Drug.objects.first()
+    response = client.post(reverse("catalog:toggle_favorite", args=[drug.id]))
+    assert response.status_code == 302
+    assert "/hisob/kirish/" in response.url
+
+
 def test_compress_image_resizes_and_converts_to_jpeg():
     import io
 
@@ -128,6 +154,24 @@ def test_drug_save_compresses_uploaded_image(db):
     out = Image.open(drug.image)
     assert max(out.size) <= 800
     drug.image.delete(save=False)
+
+
+def test_uz_timesince_and_is_price_stale():
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from catalog.templatetags.ui_extras import is_price_stale, uz_timesince
+
+    now = timezone.now()
+    assert uz_timesince(now) == "hozirgina"
+    assert uz_timesince(now - timedelta(hours=3)) == "3 soat oldin"
+    assert uz_timesince(now - timedelta(days=5)) == "5 kun oldin"
+    assert uz_timesince(None) == ""
+
+    assert is_price_stale(now - timedelta(days=5)) is False
+    assert is_price_stale(now - timedelta(days=31)) is True
+    assert is_price_stale(None) is False
 
 
 def test_category_detail_paginates_drug_list(client, db):

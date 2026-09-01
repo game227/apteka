@@ -71,6 +71,9 @@
             <p class="mt-1 flex items-center gap-2 text-xs text-ink-400">
               {% if row.distance_km is not None %}<span class="flex items-center gap-1">{% icon 'map-pin' 'w-3.5 h-3.5' %}{{ row.distance_km }} km</span>{% endif %}
               {% if not row.in_stock %}<span class="text-red-500 font-medium">mavjud emas</span>{% endif %}
+              <span class="flex items-center gap-1 {% if row.updated_at|is_price_stale %}text-amber-500{% endif %}" title="Narx oxirgi marta {{ row.updated_at|date:'d.m.Y H:i' }} da yangilangan">
+                {% icon 'clock' 'w-3.5 h-3.5' %}{{ row.updated_at|uz_timesince }} yangilangan
+              </span>
             </p>
           </div>
           <div class="text-right shrink-0">
