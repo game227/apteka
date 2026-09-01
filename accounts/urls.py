@@ -20,6 +20,8 @@ urlpatterns = [
     path("2fa/yoqish/", views.totp_setup_view, name="totp_setup"),
     path("2fa/yoqish/qr/", views.totp_qr_view, name="totp_qr"),
     path("2fa/ochirish/", views.totp_disable_view, name="totp_disable"),
+    path("2fa/simulyator/", views.totp_simulator_view, name="totp_simulator"),
+    path("2fa/simulyator/kod/", views.totp_simulator_code_view, name="totp_simulator_code"),
     path(
         "parol-tiklash/",
         login_not_required(
