@@ -105,6 +105,10 @@ def totp_verify_view(request):
     if not user_id:
         return redirect("accounts:login")
     user = get_object_or_404(User, pk=user_id)
+    # Faqat DEBUG (lokal) rejimda — real autentifikator ilovasi bo'lmagan
+    # holda sinash uchun joriy to'g'ri kodni ko'rsatadi. Production'da
+    # (DEBUG=False) hech qachon ko'rsatilmaydi — aks holda 2FA ma'nosiz bo'lardi.
+    dev_code = pyotp.TOTP(user.totp_secret).now() if settings.DEBUG else None
 
     if request.method == "POST":
         if cache.get(_totp_attempts_key(user_id), 0) >= TOTP_ATTEMPT_LIMIT:
@@ -112,7 +116,7 @@ def totp_verify_view(request):
                 request,
                 f"Juda ko'p noto'g'ri urinish. {TOTP_LOCKOUT_SECONDS // 60} daqiqadan keyin qayta urinib ko'ring.",
             )
-            return render(request, "accounts/totp_verify.html")
+            return render(request, "accounts/totp_verify.html", {"dev_code": dev_code})
 
         code = (request.POST.get("code") or "").strip()
         totp = pyotp.TOTP(user.totp_secret)
@@ -127,7 +131,7 @@ def totp_verify_view(request):
         cache.set(_totp_attempts_key(user_id), attempts, TOTP_LOCKOUT_SECONDS)
         messages.error(request, "Kod noto'g'ri. Qayta urinib ko'ring.")
 
-    return render(request, "accounts/totp_verify.html")
+    return render(request, "accounts/totp_verify.html", {"dev_code": dev_code})
 
 
 def totp_setup_view(request):
@@ -151,7 +155,12 @@ def totp_setup_view(request):
         messages.error(request, "Kod noto'g'ri. Autentifikator ilovadagi joriy 6 xonali kodni kiriting.")
 
     provisioning_uri = pyotp.TOTP(user.totp_secret).provisioning_uri(name=user.email or user.username, issuer_name="Dori Narxlari")
-    return render(request, "accounts/totp_setup.html", {"secret": user.totp_secret, "provisioning_uri": provisioning_uri})
+    dev_code = pyotp.TOTP(user.totp_secret).now() if settings.DEBUG else None
+    return render(
+        request,
+        "accounts/totp_setup.html",
+        {"secret": user.totp_secret, "provisioning_uri": provisioning_uri, "dev_code": dev_code},
+    )
 
 
 def totp_qr_view(request):
