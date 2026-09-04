@@ -52,9 +52,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-    "cloudinary_storage",
     "django.contrib.staticfiles",
-    "cloudinary",
     "django.contrib.humanize",
     "django.contrib.sitemaps",
     "accounts",
@@ -143,11 +141,9 @@ STORAGES = {
 if os.environ.get("CLOUDINARY_URL"):
     STORAGES["default"] = {"BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage"}
 
-# django-cloudinary-storage o'zining collectstatic buyrug'ini ro'yxatdan
-# o'tkazadi va u hali ham eski STATICFILES_STORAGE sozlamasini tekshiradi
-# (yangi STORAGES lug'atini emas) — shu sozlama yo'q bo'lsa build xato beradi.
-# Statik fayllar baribir WhiteNoise orqali xizmat qiladi, Cloudinary faqat
-# media (yuklangan rasmlar) uchun ishlatiladi.
+# Ba'zi uchinchi tomon paketlari hali ham eski STATICFILES_STORAGE
+# sozlamasini to'g'ridan-to'g'ri tekshiradi (yangi STORAGES lug'atini emas) —
+# ikkalasini mos saqlash uchun.
 STATICFILES_STORAGE = STORAGES["staticfiles"]["BACKEND"]
 
 MEDIA_URL = "media/"
