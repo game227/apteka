@@ -305,6 +305,41 @@ def test_password_reset_sends_email_and_allows_new_password(client, db, mailoutb
     assert user.check_password("yangiparol456")
 
 
+def test_password_reset_locks_out_after_5_requests(client, db, mailoutbox):
+    for _ in range(5):
+        client.post(reverse("accounts:password_reset"), {"email": "yoq@example.com"})
+    assert len(mailoutbox) == 0  # bu email mavjud emas, lekin urinishlar baribir sanaladi
+
+    response = client.post(reverse("accounts:password_reset"), {"email": "yoq@example.com"}, follow=True)
+    error_messages = [str(m) for m in get_messages(response.wsgi_request)]
+    assert any("Juda ko'p urinish" in m for m in error_messages)
+
+
+def test_register_locks_out_after_3_accounts_from_same_ip(client, db):
+    for i in range(3):
+        client.post(
+            reverse("accounts:register"),
+            {
+                "username": f"foydalanuvchi{i}", "first_name": "F", "email": f"f{i}@example.com",
+                "phone": "", "password1": "murakkab12345", "password2": "murakkab12345", "terms_accepted": "on",
+            },
+        )
+        client.logout()
+    assert User.objects.count() == 3
+
+    response = client.post(
+        reverse("accounts:register"),
+        {
+            "username": "toshib_ketgan", "first_name": "F", "email": "toshib@example.com",
+            "phone": "", "password1": "murakkab12345", "password2": "murakkab12345", "terms_accepted": "on",
+        },
+        follow=True,
+    )
+    assert not User.objects.filter(username="toshib_ketgan").exists()
+    error_messages = [str(m) for m in get_messages(response.wsgi_request)]
+    assert any("juda ko'p hisob yaratildi" in m for m in error_messages)
+
+
 def test_resolve_contact_message_marks_resolved_for_own_pharmacy(client, staff_user, pharmacy):
     from pharmacies.models import ContactMessage
 
@@ -453,6 +488,21 @@ def test_platform_admin_decorator_blocks_plain_user(client, plain_user):
     client.force_login(plain_user)
     response = client.get(reverse("pharmacies:admin_dashboard"), follow=True)
     assert response.redirect_chain[-1][0] == reverse("catalog:home")
+
+
+def test_admin_error_email_sent_when_admins_configured(mailoutbox, settings):
+    import logging
+
+    settings.ADMINS = [("Admin", "admin@example.com")]
+    settings.DEBUG = False
+    logger = logging.getLogger("django.request")
+    try:
+        raise ValueError("test xatolik")
+    except ValueError:
+        logger.error("Internal Server Error: /test/", exc_info=True, extra={"status_code": 500})
+
+    assert len(mailoutbox) == 1
+    assert "admin@example.com" in mailoutbox[0].to
 
 
 def test_platform_admin_decorator_allows_superuser(client, db):

@@ -13,7 +13,11 @@
   {% for drug in drugs %}
     <a href="{{ drug.get_absolute_url }}" style="--i:{{ forloop.counter0 }}" class="hover-lift flex items-center justify-between rounded-2xl glass p-4 shadow-card hover:border-brand-200 hover:shadow-card-hover">
       <div class="flex items-center gap-3 min-w-0">
-        <span class="grid place-items-center w-9 h-9 rounded-lg bg-ink-200 text-ink-400 shrink-0">{% icon 'pill' 'w-4 h-4' %}</span>
+        {% if drug.image %}
+          <img src="{{ drug.image.url }}" alt="{{ drug.trade_name }}" class="w-9 h-9 rounded-lg object-cover shrink-0">
+        {% else %}
+          <span class="grid place-items-center w-9 h-9 rounded-lg bg-ink-200 text-ink-400 shrink-0">{% icon 'pill' 'w-4 h-4' %}</span>
+        {% endif %}
         <div class="min-w-0">
           <p class="font-semibold text-ink-900 truncate">{{ drug.trade_name }}</p>
           <p class="text-sm text-ink-500 truncate">{{ drug.substance.name_inn }}</p>

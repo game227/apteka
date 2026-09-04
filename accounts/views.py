@@ -7,6 +7,7 @@ import qrcode
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login
+from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_not_required
 from django.contrib.auth.views import LoginView
 from django.core.cache import cache
@@ -14,13 +15,13 @@ from django.core.mail import send_mail
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 
-from accounts.forms import ProfileForm, RegisterForm, StyledAuthenticationForm
+from accounts.forms import ProfileForm, RegisterForm, StyledAuthenticationForm, StyledPasswordResetForm
 from accounts.models import User, UserRole
 from accounts.tokens import email_verification_token
 from catalog.models import Favorite, PriceDropAlert, SearchQuery
@@ -47,9 +48,23 @@ def _send_verification_email(request, user):
 LOGIN_ATTEMPT_LIMIT = 5
 LOGIN_LOCKOUT_SECONDS = 15 * 60
 
+REGISTER_ATTEMPT_LIMIT = 3
+REGISTER_LOCKOUT_SECONDS = 60 * 60
+
+PASSWORD_RESET_ATTEMPT_LIMIT = 5
+PASSWORD_RESET_LOCKOUT_SECONDS = 60 * 60
+
 
 def _login_attempts_key(request):
     return f"login_attempts:{request.META.get('REMOTE_ADDR', 'unknown')}"
+
+
+def _register_attempts_key(request):
+    return f"register_attempts:{request.META.get('REMOTE_ADDR', 'unknown')}"
+
+
+def _password_reset_attempts_key(request):
+    return f"pwreset_attempts:{request.META.get('REMOTE_ADDR', 'unknown')}"
 
 
 @method_decorator(login_not_required, name="dispatch")
@@ -222,6 +237,32 @@ def totp_disable_view(request):
     return redirect("accounts:profile")
 
 
+@method_decorator(login_not_required, name="dispatch")
+class RateLimitedPasswordResetView(auth_views.PasswordResetView):
+    """Bitta IP'dan ketma-ket ko'p marta parol-tiklash so'rovi yuborib,
+    email'ni bombardimon qilish yoki ro'yxatdagi manzillarni "tekshirib
+    chiqish"ning oldini oladi — email mavjud yoki yo'qligidan qat'i nazar
+    har bir POST urinish sifatida hisoblanadi."""
+
+    template_name = "accounts/password_reset.html"
+    email_template_name = "accounts/password_reset_email.html"
+    subject_template_name = "accounts/password_reset_subject.txt"
+    success_url = reverse_lazy("accounts:password_reset_done")
+    form_class = StyledPasswordResetForm
+
+    def post(self, request, *args, **kwargs):
+        key = _password_reset_attempts_key(request)
+        attempts = cache.get(key, 0)
+        if attempts >= PASSWORD_RESET_ATTEMPT_LIMIT:
+            messages.error(
+                request,
+                f"Juda ko'p urinish. {PASSWORD_RESET_LOCKOUT_SECONDS // 60} daqiqadan keyin qayta urinib ko'ring.",
+            )
+            return redirect("accounts:password_reset")
+        cache.set(key, attempts + 1, PASSWORD_RESET_LOCKOUT_SECONDS)
+        return super().post(request, *args, **kwargs)
+
+
 @login_not_required
 def register_view(request):
     invite_token = request.GET.get("invite") or request.POST.get("invite_token")
@@ -233,6 +274,15 @@ def register_view(request):
             invite = None
 
     if request.method == "POST":
+        register_key = _register_attempts_key(request)
+        if cache.get(register_key, 0) >= REGISTER_ATTEMPT_LIMIT:
+            messages.error(
+                request,
+                f"Bu manzildan juda ko'p hisob yaratildi. {REGISTER_LOCKOUT_SECONDS // 60} daqiqadan keyin qayta urinib ko'ring.",
+            )
+            form = RegisterForm()
+            return render(request, "accounts/register.html", {"form": form, "invite": invite})
+
         form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
@@ -243,6 +293,7 @@ def register_view(request):
             if invite:
                 invite.used_by = user
                 invite.save(update_fields=["used_by"])
+            cache.set(register_key, cache.get(register_key, 0) + 1, REGISTER_LOCKOUT_SECONDS)
             login(request, user)
             _send_verification_email(request, user)
             messages.success(request, "Xush kelibsiz! Email manzilingizni tasdiqlash uchun sizga havola yubordik.")

@@ -86,7 +86,11 @@
         <div class="grid gap-3 sm:grid-cols-2 stagger">
           {% for drug in popular_drugs %}
             <a href="{{ drug.get_absolute_url }}" style="--i:{{ forloop.counter0 }}" class="hover-lift glass glass-hover flex items-center gap-3 rounded-2xl p-3.5">
-              <span class="grid place-items-center w-10 h-10 rounded-xl bg-brand-100 text-brand-700 shrink-0">{% icon 'pill' 'w-4.5 h-4.5' %}</span>
+              {% if drug.image %}
+                <img src="{{ drug.image.url }}" alt="{{ drug.trade_name }}" class="w-10 h-10 rounded-xl object-cover shrink-0">
+              {% else %}
+                <span class="grid place-items-center w-10 h-10 rounded-xl bg-brand-100 text-brand-700 shrink-0">{% icon 'pill' 'w-4.5 h-4.5' %}</span>
+              {% endif %}
               <div class="min-w-0">
                 <p class="font-medium text-ink-900 truncate">{{ drug.trade_name }}</p>
                 <p class="text-xs text-ink-500 truncate">{{ drug.substance.name_inn }}</p>

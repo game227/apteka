@@ -1,16 +1,37 @@
 import random
+from pathlib import Path
 
+from django.core.files import File
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from accounts.models import User, UserRole
 from catalog.demo_data import CATEGORIES, DRUGS, PHARMACIES
 from catalog.models import Category, Drug, DrugAlias, Substance
+from config.image_utils import compress_image
 from pharmacies.models import Pharmacy, PharmacyDrugPrice, PharmacyInvite, PriceHistory
 from pharmacies.services import upsert_price
 
 MIN_DRUGS_PER_PHARMACY = 20
 FORCED_OVERPRICED_PER_PHARMACY = 3
+
+DEMO_IMAGES_DIR = Path(__file__).resolve().parent.parent.parent / "demo_images"
+
+# Savdo nomi -> demo_images/ ichidagi fayl nomi. Haqiqiy qadoq fotolari
+# (Wikimedia Commons, ochiq litsenziyali) — demo bazani ko'rgazmali qilish
+# uchun; Drug.save() ularni avtomatik siqadi (config.image_utils.compress_image).
+DRUG_IMAGE_FILES = {
+    "Panadol": "panadol.jpg",
+    "Nurofen": "nurofen.jpg",
+    "Sumamed": "sumamed.jpg",
+    "No-shpa": "no-shpa.jpg",
+    "Smecta": "smecta.jpg",
+    "Voltaren": "voltaren.jpg",
+    "Amoksiklav": "amoksiklav.jpg",
+    "Augmentin": "augmentin.jpg",
+    "Vitrum": "vitrum.jpg",
+    "Omez": "omez.jpg",
+}
 
 
 class Command(BaseCommand):
@@ -41,6 +62,11 @@ class Command(BaseCommand):
                     dosage_form=dosage_form, dosage_strength=dosage_strength, reference_price=ref_price,
                 )
                 DrugAlias.objects.bulk_create([DrugAlias(drug=drug, alias_text=a) for a in aliases])
+                image_file = DRUG_IMAGE_FILES.get(trade_name)
+                if image_file:
+                    with open(DEMO_IMAGES_DIR / image_file, "rb") as f:
+                        compressed = compress_image(File(f, name=image_file), max_dimension=800)
+                    drug.image.save(compressed.name, compressed, save=True)
                 drugs.append(drug)
 
         pharmacies = [

@@ -4,7 +4,7 @@ from django.contrib.auth.views import LogoutView
 from django.urls import path, reverse_lazy
 
 from accounts import views
-from accounts.forms import StyledPasswordResetForm, StyledSetPasswordForm
+from accounts.forms import StyledSetPasswordForm
 
 app_name = "accounts"
 
@@ -24,15 +24,7 @@ urlpatterns = [
     path("2fa/simulyator/kod/", views.totp_simulator_code_view, name="totp_simulator_code"),
     path(
         "parol-tiklash/",
-        login_not_required(
-            auth_views.PasswordResetView.as_view(
-                template_name="accounts/password_reset.html",
-                email_template_name="accounts/password_reset_email.html",
-                subject_template_name="accounts/password_reset_subject.txt",
-                success_url=reverse_lazy("accounts:password_reset_done"),
-                form_class=StyledPasswordResetForm,
-            )
-        ),
+        views.RateLimitedPasswordResetView.as_view(),
         name="password_reset",
     ),
     path(

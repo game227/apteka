@@ -52,7 +52,9 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "cloudinary_storage",
     "django.contrib.staticfiles",
+    "cloudinary",
     "django.contrib.humanize",
     "django.contrib.sitemaps",
     "accounts",
@@ -128,10 +130,18 @@ USE_THOUSAND_SEPARATOR = True
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# CLOUDINARY_URL berilsa (masalan "cloudinary://<key>:<secret>@<cloud_name>",
+# Cloudinary boshqaruv panelidan to'g'ridan-to'g'ri nusxalanadi), yuklangan
+# dori/retsept rasmlari u yerda doimiy saqlanadi — aks holda mahalliy disk
+# ishlatiladi (Render bepul rejasida disk vaqtinchalik: har qayta
+# joylashtirishda o'chib ketadi, shu sabab bu productionda MAJBURIY).
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
 }
+if os.environ.get("CLOUDINARY_URL"):
+    STORAGES["default"] = {"BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage"}
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -154,6 +164,16 @@ EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True") == "True"
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "noreply@dorinarxlari.local")
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+# ADMIN_ALERT_EMAIL berilsa (yoki ADMIN_BOOTSTRAP_EMAIL'dan olinsa), Django
+# serverda kutilmagan xatolik (500) yuz berganda shu manzilga avtomatik
+# email yuboradi — Sentry hali ulanmagan bo'lsa ham, hech bo'lmaganda
+# xatolik yuz berganini bilib turish uchun (EMAIL_HOST sozlangan bo'lishi kerak).
+_admin_alert_email = os.environ.get("ADMIN_ALERT_EMAIL") or os.environ.get("ADMIN_BOOTSTRAP_EMAIL")
+if _admin_alert_email:
+    ADMINS = [("Admin", _admin_alert_email)]
+    MANAGERS = ADMINS
 
 # --- Ilova sozlamalari ---
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")

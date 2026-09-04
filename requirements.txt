@@ -10,5 +10,7 @@ whitenoise>=6.8
 sentry-sdk>=2.68
 qrcode[pil]>=8.0
 pyotp>=2.9
+django-cloudinary-storage>=0.3
+cloudinary>=1.41
 pytest>=8.3
 pytest-django>=4.9
