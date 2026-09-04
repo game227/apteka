@@ -106,7 +106,7 @@
         <h2 class="mb-3 text-sm font-semibold text-ink-500 uppercase tracking-wide">Turkumlar bo'yicha ko'rish</h2>
         <div class="flex flex-wrap gap-2">
           {% for cat in categories %}
-            <a href="{{ cat.get_absolute_url }}" class="hover-lift glass glass-hover rounded-full px-4 py-2 text-sm font-medium text-ink-700 hover:text-brand-400">{{ cat.icon }} {{ cat.name_uz }}</a>
+            <a href="{{ cat.get_absolute_url }}" class="hover-lift glass glass-hover flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium text-ink-700 hover:text-brand-400">{% icon cat.icon 'w-4 h-4' %}{{ cat.name_uz }}</a>
           {% endfor %}
           <a href="{% url 'catalog:category_list' %}" class="flex items-center gap-1 rounded-full px-4 py-2 text-sm font-semibold text-brand-700 hover:gap-1.5 hover:text-brand-400 transition-all">Barchasi {% icon 'arrow-right' 'w-4 h-4' %}</a>
         </div>

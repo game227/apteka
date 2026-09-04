@@ -9,7 +9,7 @@
 <div class="grid gap-3 sm:grid-cols-2 stagger">
   {% for cat in categories %}
     <a href="{{ cat.get_absolute_url }}" style="--i:{{ forloop.counter0 }}" class="hover-lift flex items-center gap-4 rounded-2xl glass p-5 shadow-card hover:border-brand-200 hover:shadow-card-hover">
-      <span class="grid place-items-center w-12 h-12 rounded-xl bg-brand-50 text-2xl shrink-0">{{ cat.icon }}</span>
+      <span class="grid place-items-center w-12 h-12 rounded-xl bg-brand-50 text-brand-600 shrink-0">{% icon cat.icon 'w-6 h-6' %}</span>
       <div class="min-w-0">
         <p class="text-lg font-semibold text-ink-900 truncate">{{ cat.name_uz }}</p>
         <p class="text-sm text-ink-500">{{ cat.substances.count }} ta ta'sir moddasi</p>

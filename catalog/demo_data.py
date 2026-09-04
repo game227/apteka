@@ -2,46 +2,46 @@
 
 # (category_icon, category_name_uz, [(name_inn, name_uz)])
 CATEGORIES = [
-    ("🌡️", "Og'riq qoldiruvchi va isitma tushiruvchi", [
+    ("thermometer", "Og'riq qoldiruvchi va isitma tushiruvchi", [
         ("Paracetamol", "Paratsetamol"), ("Ibuprofen", "Ibuprofen"),
         ("Metamizole sodium", "Metamizol natriy"), ("Diclofenac", "Diklofenak"),
         ("Ketorolac", "Ketorolak"), ("Nimesulide", "Nimesulid"),
     ]),
-    ("🦠", "Antibiotiklar", [
+    ("shield", "Antibiotiklar", [
         ("Amoxicillin", "Amoksitsillin"), ("Amoxicillin+Clavulanate", "Amoksitsillin+Klavulanat"),
         ("Azithromycin", "Azitromitsin"), ("Ciprofloxacin", "Siprofloksatsin"),
         ("Cefixime", "Tsefiksim"), ("Doxycycline", "Doksitsiklin"),
         ("Clarithromycin", "Klaritromitsin"), ("Metronidazole", "Metronidazol"),
     ]),
-    ("🤧", "Shamollash va gripp", [
+    ("virus", "Shamollash va gripp", [
         ("Oseltamivir", "Oseltamivir"), ("Bromhexine", "Bromgeksin"),
         ("Ambroxol", "Ambroksol"), ("Acetylcysteine", "Atsetilsistein"),
     ]),
-    ("🤮", "Allergiya", [
+    ("flower", "Allergiya", [
         ("Loratadine", "Loratadin"), ("Cetirizine", "Setirizin"),
         ("Desloratadine", "Desloratadin"), ("Chlorpheniramine", "Xlorfeniramin"),
     ]),
-    ("🍽️", "Oshqozon-ichak", [
+    ("stomach", "Oshqozon-ichak", [
         ("Omeprazole", "Omeprazol"), ("Pantoprazole", "Pantoprazol"),
         ("Drotaverine", "Drotaverin"), ("Domperidone", "Domperidon"),
         ("Loperamide", "Loperamid"), ("Simethicone", "Simetikon"),
         ("Diosmectite", "Diosmektit"), ("Nifuroxazide", "Nifuroksazid"),
         ("Probiotic complex", "Probiotik kompleks"),
     ]),
-    ("❤️", "Yurak va qon tomir", [
+    ("heart-solid", "Yurak va qon tomir", [
         ("Amlodipine", "Amlodipin"), ("Enalapril", "Enalapril"),
         ("Lisinopril", "Lizinopril"), ("Losartan", "Lozartan"),
         ("Bisoprolol", "Bisoprolol"), ("Atorvastatin", "Atorvastatin"),
         ("Captopril", "Kaptopril"),
     ]),
-    ("🩸", "Diabet", [("Metformin", "Metformin"), ("Gliclazide", "Glikazid")]),
-    ("💊", "Vitamin va minerallar", [
+    ("droplet", "Diabet", [("Metformin", "Metformin"), ("Gliclazide", "Glikazid")]),
+    ("pill", "Vitamin va minerallar", [
         ("Ascorbic acid", "Askorbin kislotasi"), ("Cholecalciferol", "Vitamin D3"),
         ("Calcium+D3", "Kaltsiy+D3"), ("Magnesium+B6", "Magniy+B6"),
         ("Multivitamin complex", "Multivitamin kompleksi"),
     ]),
-    ("🫁", "Nafas yo'llari", [("Salbutamol", "Salbutamol"), ("Montelukast", "Montelukast")]),
-    ("🧴", "Teri va tashqi ishlatish", [
+    ("lungs", "Nafas yo'llari", [("Salbutamol", "Salbutamol"), ("Montelukast", "Montelukast")]),
+    ("bottle", "Teri va tashqi ishlatish", [
         ("Betamethasone", "Betametazon"), ("Hydrocortisone", "Gidrokortizon"),
         ("Clotrimazole", "Klotrimazol"), ("Ketoprofen", "Ketoprofen (gel)"),
     ]),

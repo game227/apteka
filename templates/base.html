@@ -356,14 +356,15 @@
         // Xaritaning o'zida "mening joylashuvim" tugmasi — bosilganda brauzerdan
         // joylashuv so'raladi va sahifa ?lat=&lng= bilan qayta yuklanadi (shu orqali
         // narxlar ham masofa bo'yicha qayta saralanadi, xaritadagi ko'k nuqta bilan bir xil oqim).
+        const locatePinIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg>';
         const LocateControl = L.Control.extend({
           options: { position: 'topright' },
           onAdd: function () {
             const btn = L.DomUtil.create('button', 'leaflet-bar');
             btn.type = 'button';
             btn.title = 'Mening joylashuvim';
-            btn.innerHTML = '📍';
-            btn.style.cssText = 'width:34px;height:34px;font-size:16px;line-height:34px;text-align:center;cursor:pointer;background:#fff;border:none;';
+            btn.innerHTML = locatePinIcon;
+            btn.style.cssText = 'width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:#fff;border:none;color:#2c6e8c;';
             L.DomEvent.disableClickPropagation(btn);
             btn.onclick = function () {
               if (!('geolocation' in navigator)) {
@@ -379,7 +380,7 @@
                   window.location.href = url.toString();
                 },
                 function (err) {
-                  btn.innerHTML = '📍';
+                  btn.innerHTML = locatePinIcon;
                   let msg = "Joylashuvni aniqlab bo'lmadi.";
                   if (err.code === err.PERMISSION_DENIED) msg = "Joylashuvga ruxsat berilmadi — brauzer manzil satridagi qulf belgisidan ruxsat bering.";
                   else if (err.code === err.TIMEOUT) msg = "Joylashuvni aniqlash vaqti tugadi, qayta urinib ko'ring.";

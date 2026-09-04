@@ -8,7 +8,10 @@ class Category(models.Model):
     name_uz = models.CharField(max_length=120)
     name_ru = models.CharField(max_length=120, blank=True)
     slug = models.SlugField(max_length=140, unique=True, blank=True)
-    icon = models.CharField(max_length=8, blank=True, help_text="Emoji, masalan 💊")
+    icon = models.CharField(
+        max_length=20, blank=True,
+        help_text="Ikonka nomi (catalog/templatetags/ui_extras.py dagi _ICONS lug'atidan), masalan 'pill'",
+    )
     order = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
