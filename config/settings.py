@@ -143,6 +143,13 @@ STORAGES = {
 if os.environ.get("CLOUDINARY_URL"):
     STORAGES["default"] = {"BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage"}
 
+# django-cloudinary-storage o'zining collectstatic buyrug'ini ro'yxatdan
+# o'tkazadi va u hali ham eski STATICFILES_STORAGE sozlamasini tekshiradi
+# (yangi STORAGES lug'atini emas) — shu sozlama yo'q bo'lsa build xato beradi.
+# Statik fayllar baribir WhiteNoise orqali xizmat qiladi, Cloudinary faqat
+# media (yuklangan rasmlar) uchun ishlatiladi.
+STATICFILES_STORAGE = STORAGES["staticfiles"]["BACKEND"]
+
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
