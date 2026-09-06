@@ -52,7 +52,21 @@ def test_login_succeeds_within_attempt_limit(client, plain_user):
 
     response = client.post(reverse("accounts:login"), {"username": "aziz", "password": "demo12345"})
     assert "_auth_user_id" in client.session
-    cache.clear()
+
+
+def test_login_with_email_succeeds(client, plain_user):
+    plain_user.email = "aziz@example.com"
+    plain_user.save(update_fields=["email"])
+    response = client.post(reverse("accounts:login"), {"username": "aziz@example.com", "password": "demo12345"})
+    assert "_auth_user_id" in client.session
+    assert int(client.session["_auth_user_id"]) == plain_user.id
+
+
+def test_login_with_email_wrong_password_fails(client, plain_user):
+    plain_user.email = "aziz@example.com"
+    plain_user.save(update_fields=["email"])
+    client.post(reverse("accounts:login"), {"username": "aziz@example.com", "password": "notogri"})
+    assert "_auth_user_id" not in client.session
 
 
 @pytest.fixture
@@ -139,11 +153,12 @@ def test_totp_disable_requires_correct_password(client, totp_user):
 def test_register_creates_plain_user_and_logs_in(client, db):
     response = client.post(
         reverse("accounts:register"),
-        {"username": "yangi", "first_name": "Yangi", "email": "test@example.com", "phone": "", "password1": "murakkab12345", "password2": "murakkab12345", "terms_accepted": "on"},
+        {"first_name": "Yangi", "email": "yangi@example.com", "password1": "murakkab12345", "password2": "murakkab12345", "terms_accepted": "on"},
     )
-    user = User.objects.get(username="yangi")
+    user = User.objects.get(email="yangi@example.com")
     assert user.role == UserRole.USER
     assert user.pharmacy_id is None
+    assert user.username  # avtomatik yaratilgan (email'dan)
     assert response.status_code == 302
     assert "_auth_user_id" in client.session
 
@@ -153,9 +168,9 @@ def test_register_with_valid_invite_grants_pharmacy_staff(client, pharmacy):
     url = f"{reverse('accounts:register')}?invite={invite.token}"
     client.post(
         url,
-        {"username": "xodim", "first_name": "Xodim", "email": "test@example.com", "phone": "", "password1": "murakkab12345", "password2": "murakkab12345", "terms_accepted": "on"},
+        {"first_name": "Xodim", "email": "xodim@example.com", "password1": "murakkab12345", "password2": "murakkab12345", "terms_accepted": "on"},
     )
-    user = User.objects.get(username="xodim")
+    user = User.objects.get(email="xodim@example.com")
     assert user.role == UserRole.PHARMACY_STAFF
     assert user.pharmacy_id == pharmacy.id
 
@@ -169,9 +184,9 @@ def test_register_with_expired_invite_falls_back_to_plain_user(client, pharmacy)
     url = f"{reverse('accounts:register')}?invite={invite.token}"
     client.post(
         url,
-        {"username": "kech", "first_name": "Kech", "email": "test@example.com", "phone": "", "password1": "murakkab12345", "password2": "murakkab12345", "terms_accepted": "on"},
+        {"first_name": "Kech", "email": "kech@example.com", "password1": "murakkab12345", "password2": "murakkab12345", "terms_accepted": "on"},
     )
-    user = User.objects.get(username="kech")
+    user = User.objects.get(email="kech@example.com")
     assert user.role == UserRole.USER
     assert user.pharmacy_id is None
 
@@ -181,37 +196,62 @@ def test_register_with_already_used_invite_falls_back_to_plain_user(client, phar
     url = f"{reverse('accounts:register')}?invite={invite.token}"
     client.post(
         url,
-        {"username": "ikkinchi", "first_name": "Ikkinchi", "email": "test@example.com", "phone": "", "password1": "murakkab12345", "password2": "murakkab12345", "terms_accepted": "on"},
+        {"first_name": "Ikkinchi", "email": "ikkinchi@example.com", "password1": "murakkab12345", "password2": "murakkab12345", "terms_accepted": "on"},
     )
-    user = User.objects.get(username="ikkinchi")
+    user = User.objects.get(email="ikkinchi@example.com")
     assert user.role == UserRole.USER
 
 
 def test_register_without_accepting_terms_is_blocked(client, db):
     response = client.post(
         reverse("accounts:register"),
-        {"username": "shartsiz", "first_name": "Shartsiz", "email": "test@example.com", "phone": "", "password1": "murakkab12345", "password2": "murakkab12345"},
+        {"first_name": "Shartsiz", "email": "shartsiz@example.com", "password1": "murakkab12345", "password2": "murakkab12345"},
     )
     assert response.status_code == 200
-    assert not User.objects.filter(username="shartsiz").exists()
+    assert not User.objects.filter(email="shartsiz@example.com").exists()
     assert "terms_accepted" in response.context["form"].errors
 
 
 def test_register_sets_accepted_terms_at(client, db):
     client.post(
         reverse("accounts:register"),
-        {"username": "roziboldi", "first_name": "Rozi", "email": "test@example.com", "phone": "", "password1": "murakkab12345", "password2": "murakkab12345", "terms_accepted": "on"},
+        {"first_name": "Rozi", "email": "roziboldi@example.com", "password1": "murakkab12345", "password2": "murakkab12345", "terms_accepted": "on"},
     )
-    user = User.objects.get(username="roziboldi")
+    user = User.objects.get(email="roziboldi@example.com")
     assert user.accepted_terms_at is not None
+
+
+def test_register_rejects_duplicate_email(client, plain_user):
+    plain_user.email = "aziz@example.com"
+    plain_user.save(update_fields=["email"])
+    response = client.post(
+        reverse("accounts:register"),
+        {"first_name": "Ikkinchi", "email": "aziz@example.com", "password1": "murakkab12345", "password2": "murakkab12345", "terms_accepted": "on"},
+    )
+    assert response.status_code == 200
+    assert "email" in response.context["form"].errors
+
+
+def test_register_generates_unique_username_from_email(client, db):
+    client.post(
+        reverse("accounts:register"),
+        {"first_name": "Bir", "email": "sardor@example.com", "password1": "murakkab12345", "password2": "murakkab12345", "terms_accepted": "on"},
+    )
+    client.logout()
+    client.post(
+        reverse("accounts:register"),
+        {"first_name": "Ikki", "email": "sardor@boshqa.com", "password1": "murakkab12345", "password2": "murakkab12345", "terms_accepted": "on"},
+    )
+    usernames = set(User.objects.filter(email__in=["sardor@example.com", "sardor@boshqa.com"]).values_list("username", flat=True))
+    assert len(usernames) == 2  # ikkalasi ham "sardor" dan boshlanadi, lekin bir xil emas
 
 
 def test_register_sends_verification_email(client, db, mailoutbox):
     client.post(
         reverse("accounts:register"),
-        {"username": "tasdiqsiz", "first_name": "Tasdiqsiz", "email": "tasdiqsiz@example.com", "phone": "", "password1": "murakkab12345", "password2": "murakkab12345", "terms_accepted": "on"},
+        {"first_name": "Tasdiqsiz", "email": "tasdiqsiz@example.com", "password1": "murakkab12345", "password2": "murakkab12345", "terms_accepted": "on"},
     )
-    user = User.objects.get(username="tasdiqsiz")
+    user = User.objects.get(email="tasdiqsiz@example.com")
     assert user.email_verified is False
     assert len(mailoutbox) == 1
     assert "tasdiqsiz@example.com" in mailoutbox[0].to
@@ -228,25 +268,25 @@ def _extract_verify_link(body):
 def test_verify_email_link_marks_verified(client, db, mailoutbox):
     client.post(
         reverse("accounts:register"),
-        {"username": "tasdiqla", "first_name": "Tasdiqla", "email": "tasdiqla@example.com", "phone": "", "password1": "murakkab12345", "password2": "murakkab12345", "terms_accepted": "on"},
+        {"first_name": "Tasdiqla", "email": "tasdiqla@example.com", "password1": "murakkab12345", "password2": "murakkab12345", "terms_accepted": "on"},
     )
     uidb64, token = _extract_verify_link(mailoutbox[0].body)
 
     response = client.get(reverse("accounts:verify_email", kwargs={"uidb64": uidb64, "token": token}))
     assert response.status_code == 302
-    user = User.objects.get(username="tasdiqla")
+    user = User.objects.get(email="tasdiqla@example.com")
     assert user.email_verified is True
 
 
 def test_verify_email_rejects_invalid_token(client, db, mailoutbox):
     client.post(
         reverse("accounts:register"),
-        {"username": "notogri", "first_name": "Notogri", "email": "notogri@example.com", "phone": "", "password1": "murakkab12345", "password2": "murakkab12345", "terms_accepted": "on"},
+        {"first_name": "Notogri", "email": "notogri@example.com", "password1": "murakkab12345", "password2": "murakkab12345", "terms_accepted": "on"},
     )
     uidb64, _token = _extract_verify_link(mailoutbox[0].body)
 
     client.get(reverse("accounts:verify_email", kwargs={"uidb64": uidb64, "token": "yaroqsiz-token"}))
-    user = User.objects.get(username="notogri")
+    user = User.objects.get(email="notogri@example.com")
     assert user.email_verified is False
 
 
@@ -320,8 +360,8 @@ def test_register_locks_out_after_3_accounts_from_same_ip(client, db):
         client.post(
             reverse("accounts:register"),
             {
-                "username": f"foydalanuvchi{i}", "first_name": "F", "email": f"f{i}@example.com",
-                "phone": "", "password1": "murakkab12345", "password2": "murakkab12345", "terms_accepted": "on",
+                "first_name": "F", "email": f"f{i}@example.com",
+                "password1": "murakkab12345", "password2": "murakkab12345", "terms_accepted": "on",
             },
         )
         client.logout()
@@ -330,12 +370,12 @@ def test_register_locks_out_after_3_accounts_from_same_ip(client, db):
     response = client.post(
         reverse("accounts:register"),
         {
-            "username": "toshib_ketgan", "first_name": "F", "email": "toshib@example.com",
-            "phone": "", "password1": "murakkab12345", "password2": "murakkab12345", "terms_accepted": "on",
+            "first_name": "F", "email": "toshib@example.com",
+            "password1": "murakkab12345", "password2": "murakkab12345", "terms_accepted": "on",
         },
         follow=True,
     )
-    assert not User.objects.filter(username="toshib_ketgan").exists()
+    assert not User.objects.filter(email="toshib@example.com").exists()
     error_messages = [str(m) for m in get_messages(response.wsgi_request)]
     assert any("juda ko'p hisob yaratildi" in m for m in error_messages)
 

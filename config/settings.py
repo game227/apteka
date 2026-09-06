@@ -115,6 +115,11 @@ else:
 
 AUTH_USER_MODEL = "accounts.User"
 
+# Ro'yxatdan o'tishda username so'ralmaydi (faqat ism/email/parol) — shu
+# sabab login sahifasida ham foydalanuvchi email kiritadi. Eski
+# hisoblar (username bilan) ham ishlashda davom etadi.
+AUTHENTICATION_BACKENDS = ["accounts.backends.EmailOrUsernameModelBackend"]
+
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator", "OPTIONS": {"min_length": 8}},
 ]

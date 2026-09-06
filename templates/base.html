@@ -5,10 +5,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Dori Narxlari{% endblock %}</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22><rect width=24 height=24 rx=6 fill=%22%232c6e8c%22/><g transform=%22rotate(-45 12 12)%22 fill=%22none%22 stroke=%22%23ffffff%22 stroke-width=%222.4%22 stroke-linecap=%22round%22><rect x=3 y=9 width=18 height=6 rx=3/><line x1=12 y1=7.8 x2=12 y2=16.2/></g></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22><rect width=24 height=24 rx=6 fill=%22%234f46e5%22/><g transform=%22rotate(-45 12 12)%22 fill=%22none%22 stroke=%22%23ffffff%22 stroke-width=%222.4%22 stroke-linecap=%22round%22><rect x=3 y=9 width=18 height=6 rx=3/><line x1=12 y1=7.8 x2=12 y2=16.2/></g></svg>">
   <link rel="manifest" href="/static/manifest.json">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <meta name="theme-color" content="#2c6e8c">
+  <meta name="theme-color" content="#4f46e5">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Dori Narxlari">
@@ -36,7 +36,7 @@
             display: ['Instrument Sans', 'Public Sans', 'sans-serif'],
           },
           colors: {
-            /* Po'lat-teal — asosiy urg'u rang. CSS-o'zgaruvchilar orqali —
+            /* Indigo — asosiy urg'u rang. CSS-o'zgaruvchilar orqali —
                shu bilan yorug'/qorong'i almashtirgich ishlaydi (pastga q.). */
             brand: {
               50:'rgb(var(--brand-tint) / .07)', 100:'rgb(var(--brand-tint) / .13)', 200:'rgb(var(--brand-tint) / .2)',
@@ -44,7 +44,7 @@
               600:'rgb(var(--brand-600) / <alpha-value>)', 700:'rgb(var(--brand-700) / <alpha-value>)', 800:'rgb(var(--brand-800) / <alpha-value>)',
               900:'rgb(var(--brand-900) / <alpha-value>)', 950:'rgb(var(--brand-950) / <alpha-value>)',
             },
-            /* Chuqur ko'k-shifer — ikkinchi urg'u/gradient juftlik, temaga qarab almashadi */
+            /* Issiq amber — ikkinchi urg'u/gradient juftlik, temaga qarab almashadi */
             violet: {
               50:'rgb(var(--violet-tint) / .07)', 100:'rgb(var(--violet-tint) / .13)', 200:'rgb(var(--violet-tint) / .2)',
               300:'rgb(var(--violet-tint) / .32)', 400:'rgb(var(--violet-400) / <alpha-value>)', 500:'rgb(var(--violet-500) / <alpha-value>)',
@@ -60,10 +60,10 @@
             },
           },
           boxShadow: {
-            card: '0 1px 2px rgba(15,23,27,.04), 0 8px 20px -12px rgba(15,23,27,.12)',
-            'card-hover': '0 4px 16px -4px rgba(44,110,140,.16), 0 14px 30px -14px rgba(15,23,27,.16)',
-            glow: '0 4px 14px -4px rgba(44,110,140,.32), 0 1px 2px rgba(15,23,27,.06)',
-            'glow-violet': '0 4px 14px -4px rgba(55,77,97,.32), 0 1px 2px rgba(15,23,27,.06)',
+            card: '0 1px 2px rgba(15,15,30,.04), 0 8px 20px -12px rgba(15,15,30,.12)',
+            'card-hover': '0 4px 16px -4px rgba(79,70,229,.18), 0 14px 30px -14px rgba(15,15,30,.16)',
+            glow: '0 4px 14px -4px rgba(79,70,229,.35), 0 1px 2px rgba(15,15,30,.06)',
+            'glow-violet': '0 4px 14px -4px rgba(217,119,6,.32), 0 1px 2px rgba(15,15,30,.06)',
           },
           spacing: {
             '4.5': '1.125rem',
@@ -73,38 +73,38 @@
     }
   </script>
   <style>
-    /* --- Tema o'zgaruvchilari: yorug' (standart — Ishonch va professionallik) --- */
+    /* --- Tema o'zgaruvchilari: yorug' (indigo + issiq amber urg'u) --- */
     :root {
-      --ink-50: 244 247 246; --ink-100: 233 240 239; --ink-200: 225 232 230; --ink-300: 207 219 217;
-      --ink-400: 123 138 136; --ink-500: 77 90 95; --ink-600: 61 72 76; --ink-700: 45 54 57;
-      --ink-800: 28 34 36; --ink-900: 18 24 27; --ink-950: 255 255 255;
-      --brand-400: 63 137 168; --brand-500: 44 110 140; --brand-600: 36 88 111;
-      --brand-700: 31 78 99; --brand-800: 23 58 74; --brand-900: 15 37 48; --brand-950: 8 16 22;
-      --brand-tint: 44 110 140;
-      --violet-400: 91 122 148; --violet-500: 55 77 97; --violet-600: 39 56 71;
-      --violet-tint: 55 77 97;
-      --page-bg: 244 247 246;
+      --ink-50: 246 246 250; --ink-100: 236 236 243; --ink-200: 227 227 237; --ink-300: 208 208 222;
+      --ink-400: 128 128 148; --ink-500: 88 88 108; --ink-600: 68 68 86; --ink-700: 50 50 66;
+      --ink-800: 32 32 44; --ink-900: 20 20 30; --ink-950: 255 255 255;
+      --brand-400: 129 140 248; --brand-500: 99 102 241; --brand-600: 79 70 229;
+      --brand-700: 67 56 202; --brand-800: 55 48 163; --brand-900: 30 27 75; --brand-950: 12 10 35;
+      --brand-tint: 79 70 229;
+      --violet-400: 251 191 36; --violet-500: 245 158 11; --violet-600: 146 64 14;
+      --violet-tint: 245 158 11;
+      --page-bg: 246 246 250;
       --glass-bg: 255 255 255; --glass-bg-alpha: 1;
-      --glass-border: 18 24 27; --glass-border-alpha: .08;
+      --glass-border: 20 20 30; --glass-border-alpha: .08;
       --glass-hover-bg-alpha: 1;
-      --select-bg: #2c6e8c; --select-fg: #ffffff;
+      --select-bg: #4f46e5; --select-fg: #ffffff;
       color-scheme: light;
     }
-    /* --- Tema o'zgaruvchilari: qorong'i (almashtirgich orqali, neon emas — chuqur ko'k-teal) --- */
+    /* --- Tema o'zgaruvchilari: qorong'i (almashtirgich orqali) --- */
     :root[data-theme="dark"] {
-      --ink-50: 10 20 24; --ink-100: 16 28 32; --ink-200: 26 42 47; --ink-300: 36 55 61;
-      --ink-400: 90 108 113; --ink-500: 130 152 156; --ink-600: 158 178 181; --ink-700: 184 200 202;
-      --ink-800: 212 224 225; --ink-900: 232 238 240; --ink-950: 255 255 255;
-      --brand-400: 58 149 181; --brand-500: 74 165 197; --brand-600: 44 110 140;
-      --brand-700: 130 200 220; --brand-800: 170 220 232; --brand-900: 210 238 244; --brand-950: 230 248 250;
-      --brand-tint: 74 165 197;
-      --violet-400: 130 160 185; --violet-500: 95 130 158; --violet-600: 150 175 195;
-      --violet-tint: 95 130 158;
-      --page-bg: 10 20 24;
-      --glass-bg: 16 28 32; --glass-bg-alpha: 1;
+      --ink-50: 12 12 24; --ink-100: 18 18 32; --ink-200: 28 28 45; --ink-300: 40 40 58;
+      --ink-400: 100 100 122; --ink-500: 140 140 160; --ink-600: 166 166 184; --ink-700: 190 190 206;
+      --ink-800: 216 216 227; --ink-900: 235 235 241; --ink-950: 255 255 255;
+      --brand-400: 165 180 252; --brand-500: 129 140 248; --brand-600: 99 102 241;
+      --brand-700: 199 210 254; --brand-800: 224 231 255; --brand-900: 238 242 255; --brand-950: 245 247 255;
+      --brand-tint: 129 140 248;
+      --violet-400: 252 211 77; --violet-500: 251 191 36; --violet-600: 254 240 190;
+      --violet-tint: 251 191 36;
+      --page-bg: 10 10 20;
+      --glass-bg: 17 17 30; --glass-bg-alpha: 1;
       --glass-border: 255 255 255; --glass-border-alpha: .08;
       --glass-hover-bg-alpha: 1;
-      --select-bg: #4aa5c5; --select-fg: #0a1418;
+      --select-bg: #818cf8; --select-fg: #100e26;
       color-scheme: dark;
     }
 
@@ -112,8 +112,22 @@
     body { font-family: 'Public Sans', ui-sans-serif, system-ui, sans-serif; }
     .sidebar-link { position: relative; }
     .sidebar-link::before { content:''; position:absolute; left:0; top:6px; bottom:6px; width:3px; border-radius:3px;
-      background: linear-gradient(180deg, #2c6e8c, #374d61); transform: scaleY(0); transform-origin: center; transition: transform .2s cubic-bezier(.22,1,.36,1); }
+      background: linear-gradient(180deg, #4f46e5, #d97706); transform: scaleY(0); transform-origin: center; transition: transform .2s cubic-bezier(.22,1,.36,1); }
     .sidebar-link:hover::before { transform: scaleY(1); }
+
+    /* --- Sidebar'ni yig'ish (ChatGPT/Claude uslubida) — faqat desktop'da,
+       mobil'da sidebar doim to'liq kenglikda ochiladigan panel bo'lib qoladi --- */
+    @media (min-width: 768px) {
+      #sidebar.collapsed { width: 4.5rem; }
+      #sidebar.collapsed .sidebar-label,
+      #sidebar.collapsed .sidebar-footer-block { display: none; }
+      #sidebar.collapsed .sidebar-link,
+      #sidebar.collapsed .sidebar-action { justify-content: center; }
+      #sidebar.collapsed .sidebar-link::before { left: 50%; margin-left: -1.5rem; width: 3rem; top: 0; bottom: 0; border-radius: .5rem; opacity: .12; }
+      #sidebar.collapsed > div:first-child > div:last-child { justify-content: center; }
+      #sidebar-collapse-btn svg { transition: transform .25s cubic-bezier(.22,1,.36,1); }
+      #sidebar.collapsed #sidebar-collapse-btn svg { transform: rotate(180deg); }
+    }
     .font-display { font-family: 'Instrument Sans', 'Public Sans', sans-serif; }
     ::selection { background-color: var(--select-bg); color: var(--select-fg); }
     [x-cloak] { display: none !important; }
@@ -153,11 +167,6 @@
 
     .hover-lift { transition: transform .2s cubic-bezier(.22,1,.36,1), box-shadow .2s ease, border-color .2s ease; }
     .hover-lift:hover { transform: translateY(-4px); }
-
-    .nav-link { position: relative; }
-    .nav-link::after { content:''; position:absolute; left:12px; right:12px; bottom:2px; height:2px; border-radius:2px;
-      background: linear-gradient(90deg, #2c6e8c, #374d61); transform: scaleX(0); transform-origin: left; transition: transform .25s cubic-bezier(.22,1,.36,1); }
-    .nav-link:hover::after { transform: scaleX(1); }
 
     .star-rating input { position:absolute; opacity:0; width:0; height:0; }
     .star-rating label { cursor:pointer; color:rgb(var(--ink-300)); font-size:1.9rem; line-height:1; transition: color .15s ease, transform .15s ease; }
@@ -201,64 +210,80 @@
 
   <div id="sidebar-backdrop" class="hidden fixed inset-0 bg-ink-950/40 z-30 md:hidden"></div>
 
-  <aside id="sidebar" class="fixed md:sticky top-0 left-0 h-screen w-72 shrink-0 z-40 -translate-x-full md:translate-x-0 transition-transform duration-300 ease-out glass border-y-0 border-l-0 flex flex-col">
-    <div class="flex items-center justify-between px-5 h-16 shrink-0">
-      <a href="{% url 'catalog:home' %}" class="group flex items-center gap-2 font-display font-extrabold text-lg text-ink-900">
-        <span class="grid place-items-center w-9 h-9 rounded-xl bg-gradient-to-br from-brand-400 to-violet-500 text-ink-950 shadow-glow transition-transform duration-300 group-hover:rotate-12 group-hover:scale-105">
-          {% icon 'pill' 'w-5 h-5' %}
-        </span>
-        <span class="bg-gradient-to-r from-brand-400 to-violet-400 bg-clip-text text-transparent">Dori Narxlari</span>
-      </a>
-      <button id="sidebar-close" class="md:hidden grid place-items-center w-8 h-8 rounded-lg text-ink-500 hover:bg-ink-200 transition-colors">
-        {% icon 'close' 'w-4.5 h-4.5' %}
-      </button>
+  <aside id="sidebar" class="fixed md:sticky top-0 left-0 h-screen w-72 shrink-0 z-40 -translate-x-full md:translate-x-0 transition-[transform,width] duration-300 ease-out glass border-y-0 border-l-0 flex flex-col">
+    <script>
+      // Yig'ilgan (collapsed) holatni sahifa chizilishidan oldin qo'llaydi —
+      // aks holda bir lahzalik "ochiq" sidebar ko'rinib, keyin yig'ilib qoladi (FOUC).
+      if (window.innerWidth >= 768 && localStorage.getItem('sidebarCollapsed') === '1') {
+        document.getElementById('sidebar').classList.add('collapsed');
+      }
+    </script>
+    <div class="shrink-0">
+      <div class="flex items-center justify-between gap-2 px-5 h-16">
+        <a href="{% url 'catalog:home' %}" class="group flex items-center gap-2 font-display font-extrabold text-lg text-ink-900 min-w-0">
+          <span class="grid place-items-center w-9 h-9 rounded-xl bg-gradient-to-br from-brand-400 to-violet-500 text-ink-950 shadow-glow transition-transform duration-300 group-hover:rotate-12 group-hover:scale-105 shrink-0">
+            {% icon 'pill' 'w-5 h-5' %}
+          </span>
+          <span class="sidebar-label bg-gradient-to-r from-brand-400 to-violet-400 bg-clip-text text-transparent truncate">Dori Narxlari</span>
+        </a>
+        <button id="sidebar-close" class="md:hidden grid place-items-center w-8 h-8 rounded-lg text-ink-500 hover:bg-ink-200 transition-colors shrink-0">
+          {% icon 'close' 'w-4.5 h-4.5' %}
+        </button>
+      </div>
+      <div class="hidden md:flex px-3 pb-2 justify-end">
+        <button id="sidebar-collapse-btn" class="grid place-items-center w-8 h-8 rounded-lg text-ink-500 hover:bg-ink-200 transition-colors shrink-0" title="Panelni yig'ish">
+          {% icon 'chevron-right' 'w-4 h-4' %}
+        </button>
+      </div>
     </div>
 
     <nav class="flex-1 overflow-y-auto px-3 py-2 space-y-0.5 text-sm font-medium">
-      <a href="{% url 'catalog:home' %}" class="sidebar-link flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-ink-600 hover:text-brand-700 hover:bg-brand-50 transition-colors">{% icon 'search' 'w-4.5 h-4.5' %}Qidiruv</a>
-      <a href="{% url 'catalog:category_list' %}" class="sidebar-link flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-ink-600 hover:text-brand-700 hover:bg-brand-50 transition-colors">{% icon 'grid' 'w-4.5 h-4.5' %}Turkumlar</a>
-      <a href="{% url 'pharmacies:list' %}" class="sidebar-link flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-ink-600 hover:text-brand-700 hover:bg-brand-50 transition-colors">{% icon 'building' 'w-4.5 h-4.5' %}Dorixonalar</a>
+      <a href="{% url 'catalog:home' %}" title="Qidiruv" class="sidebar-link flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-ink-600 hover:text-brand-700 hover:bg-brand-50 transition-colors">{% icon 'search' 'w-4.5 h-4.5 shrink-0' %}<span class="sidebar-label">Qidiruv</span></a>
+      <a href="{% url 'catalog:category_list' %}" title="Turkumlar" class="sidebar-link flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-ink-600 hover:text-brand-700 hover:bg-brand-50 transition-colors">{% icon 'grid' 'w-4.5 h-4.5 shrink-0' %}<span class="sidebar-label">Turkumlar</span></a>
+      <a href="{% url 'pharmacies:list' %}" title="Dorixonalar" class="sidebar-link flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-ink-600 hover:text-brand-700 hover:bg-brand-50 transition-colors">{% icon 'building' 'w-4.5 h-4.5 shrink-0' %}<span class="sidebar-label">Dorixonalar</span></a>
       {% if user.is_authenticated %}
-        <a href="{% url 'prescriptions:upload' %}" class="sidebar-link flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-ink-600 hover:text-brand-700 hover:bg-brand-50 transition-colors">{% icon 'camera' 'w-4.5 h-4.5' %}Retsept</a>
+        <a href="{% url 'prescriptions:upload' %}" title="Retsept" class="sidebar-link flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-ink-600 hover:text-brand-700 hover:bg-brand-50 transition-colors">{% icon 'camera' 'w-4.5 h-4.5 shrink-0' %}<span class="sidebar-label">Retsept</span></a>
         {% if user.is_pharmacy_staff %}
-          <a href="{% url 'pharmacies:staff_panel' %}" class="sidebar-link flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-ink-600 hover:text-brand-700 hover:bg-brand-50 transition-colors">{% icon 'edit' 'w-4.5 h-4.5' %}Dorixona paneli</a>
+          <a href="{% url 'pharmacies:staff_panel' %}" title="Dorixona paneli" class="sidebar-link flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-ink-600 hover:text-brand-700 hover:bg-brand-50 transition-colors">{% icon 'edit' 'w-4.5 h-4.5 shrink-0' %}<span class="sidebar-label">Dorixona paneli</span></a>
         {% endif %}
         {% if user.is_platform_admin %}
-          <a href="{% url 'pharmacies:admin_dashboard' %}" class="sidebar-link flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-ink-600 hover:text-brand-700 hover:bg-brand-50 transition-colors">{% icon 'shield' 'w-4.5 h-4.5' %}Admin</a>
+          <a href="{% url 'pharmacies:admin_dashboard' %}" title="Admin" class="sidebar-link flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-ink-600 hover:text-brand-700 hover:bg-brand-50 transition-colors">{% icon 'shield' 'w-4.5 h-4.5 shrink-0' %}<span class="sidebar-label">Admin</span></a>
         {% endif %}
       {% endif %}
     </nav>
 
     <div class="px-3 py-3 border-t border-ink-200 space-y-0.5 shrink-0">
-      <button onclick="toggleTheme()" id="theme-toggle" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-ink-600 hover:text-brand-700 hover:bg-brand-50 transition-colors">
-        <span id="theme-icon-dark">{% icon 'sun' 'w-4.5 h-4.5' %}</span>
-        <span id="theme-icon-light" class="hidden">{% icon 'moon' 'w-4.5 h-4.5' %}</span>
-        Tema almashtirish
+      <button onclick="toggleTheme()" id="theme-toggle" title="Tema almashtirish" class="sidebar-action w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-ink-600 hover:text-brand-700 hover:bg-brand-50 transition-colors">
+        <span id="theme-icon-dark" class="shrink-0">{% icon 'sun' 'w-4.5 h-4.5' %}</span>
+        <span id="theme-icon-light" class="hidden shrink-0">{% icon 'moon' 'w-4.5 h-4.5' %}</span>
+        <span class="sidebar-label">Tema almashtirish</span>
       </button>
       {% if user.is_authenticated %}
-        <a href="{{ notification_url }}" class="relative flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-ink-600 hover:text-brand-700 hover:bg-brand-50 transition-colors">
-          {% icon 'bell' 'w-4.5 h-4.5' %}Xabarlar
+        <a href="{{ notification_url }}" title="Xabarlar" class="sidebar-action relative flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-ink-600 hover:text-brand-700 hover:bg-brand-50 transition-colors">
+          {% icon 'bell' 'w-4.5 h-4.5 shrink-0' %}<span class="sidebar-label">Xabarlar</span>
           {% if notification_count %}
-            <span class="ml-auto grid place-items-center min-w-[18px] h-[18px] rounded-full bg-red-500 text-white text-[10px] font-bold px-1 leading-none">{{ notification_count }}</span>
+            <span class="sidebar-label ml-auto grid place-items-center min-w-[18px] h-[18px] rounded-full bg-red-500 text-white text-[10px] font-bold px-1 leading-none">{{ notification_count }}</span>
           {% endif %}
         </a>
-        <a href="{% url 'accounts:profile' %}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-ink-700 hover:bg-brand-50 transition-colors">
+        <a href="{% url 'accounts:profile' %}" title="{{ user.first_name|default:user.username }}" class="sidebar-action flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-ink-700 hover:bg-brand-50 transition-colors">
           <span class="grid place-items-center w-7 h-7 rounded-full bg-ink-200 text-ink-500 shrink-0">{% icon 'user' 'w-4 h-4' %}</span>
-          <span class="truncate">{{ user.first_name|default:user.username }}</span>
+          <span class="sidebar-label truncate">{{ user.first_name|default:user.username }}</span>
         </a>
         <form method="post" action="{% url 'accounts:logout' %}">
           {% csrf_token %}
-          <button class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-ink-400 hover:text-red-400 hover:bg-red-500/10 transition-colors">
-            {% icon 'logout' 'w-4.5 h-4.5' %}Chiqish
+          <button title="Chiqish" class="sidebar-action w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-ink-400 hover:text-red-400 hover:bg-red-500/10 transition-colors">
+            {% icon 'logout' 'w-4.5 h-4.5 shrink-0' %}<span class="sidebar-label">Chiqish</span>
           </button>
         </form>
       {% else %}
-        <a href="{% url 'accounts:login' %}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-ink-600 hover:text-brand-700 hover:bg-brand-50 transition-colors">Kirish</a>
-        <a href="{% url 'accounts:register' %}" class="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold bg-brand-600 text-ink-950 shadow-glow hover:bg-brand-500 transition-all">Ro'yxatdan o'tish</a>
+        <a href="{% url 'accounts:login' %}" title="Kirish" class="sidebar-action flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-ink-600 hover:text-brand-700 hover:bg-brand-50 transition-colors">{% icon 'user' 'w-4.5 h-4.5 shrink-0' %}<span class="sidebar-label">Kirish</span></a>
+        <a href="{% url 'accounts:register' %}" title="Ro'yxatdan o'tish" class="sidebar-action flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold bg-brand-600 text-ink-950 shadow-glow hover:bg-brand-500 transition-all">
+          <span class="sidebar-label">Ro'yxatdan o'tish</span>
+        </a>
       {% endif %}
     </div>
 
-    <div class="px-5 py-4 border-t border-ink-200 text-xs text-ink-400 space-y-2 shrink-0">
+    <div class="sidebar-footer-block px-5 py-4 border-t border-ink-200 text-xs text-ink-400 space-y-2 shrink-0">
       <p class="flex items-center gap-1.5">
         <span class="text-brand-600 shrink-0">{% icon 'pill' 'w-3.5 h-3.5' %}</span>
         <strong class="text-ink-600 font-semibold">{{ stats_drug_count }}</strong>&nbsp;dori ·
@@ -353,7 +378,7 @@
             btn.type = 'button';
             btn.title = 'Mening joylashuvim';
             btn.innerHTML = locatePinIcon;
-            btn.style.cssText = 'width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:#fff;border:none;color:#2c6e8c;';
+            btn.style.cssText = 'width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:#fff;border:none;color:#4f46e5;';
             L.DomEvent.disableClickPropagation(btn);
             btn.onclick = function () {
               if (!('geolocation' in navigator)) {
@@ -387,7 +412,7 @@
         if (userLat != null) {
           const youIcon = L.divIcon({
             className: '',
-            html: '<div style="width:16px;height:16px;border-radius:50%;background:#00e896;border:3px solid white;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>',
+            html: '<div style="width:16px;height:16px;border-radius:50%;background:#f59e0b;border:3px solid white;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>',
             iconSize: [16, 16],
           });
           L.marker([userLat, userLng], { icon: youIcon }).addTo(map).bindPopup('Siz shu yerdasiz');
@@ -399,7 +424,7 @@
           if (p.price !== null) popup += '<br>' + Math.round(p.price).toLocaleString('uz') + " so'm";
           if (p.distance_km !== null) popup += '<br>' + p.distance_km + ' km';
           if (!p.in_stock) popup += '<br><span style="color:#dc2626">mavjud emas</span>';
-          popup += '<br><a href="/dorixona/' + p.slug + '/" style="color:#00e896;font-weight:600">Batafsil →</a>';
+          popup += '<br><a href="/dorixona/' + p.slug + '/" style="color:#f59e0b;font-weight:600">Batafsil →</a>';
           marker.bindPopup(popup);
           bounds.push([p.lat, p.lng]);
         });
@@ -432,11 +457,11 @@
         });
         const linePath = coords.map(function (c, i) { return (i === 0 ? 'M' : 'L') + c[0].toFixed(1) + ',' + c[1].toFixed(1); }).join(' ');
         const areaPath = linePath + ' L' + coords[coords.length - 1][0].toFixed(1) + ',' + H + ' L' + coords[0][0].toFixed(1) + ',' + H + ' Z';
-        const dots = coords.map(function (c) { return '<circle cx="' + c[0].toFixed(1) + '" cy="' + c[1].toFixed(1) + '" r="3" fill="#00e896"/>'; }).join('');
+        const dots = coords.map(function (c) { return '<circle cx="' + c[0].toFixed(1) + '" cy="' + c[1].toFixed(1) + '" r="3" fill="#f59e0b"/>'; }).join('');
         el.innerHTML =
           '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" class="w-full h-40">' +
-          '<path d="' + areaPath + '" fill="#00e896" fill-opacity="0.08" stroke="none"/>' +
-          '<path d="' + linePath + '" fill="none" stroke="#00e896" stroke-width="2"/>' +
+          '<path d="' + areaPath + '" fill="#f59e0b" fill-opacity="0.08" stroke="none"/>' +
+          '<path d="' + linePath + '" fill="none" stroke="#f59e0b" stroke-width="2"/>' +
           dots +
           '</svg>' +
           '<div class="flex items-center justify-between mt-1.5 text-xs text-ink-400">' +
@@ -524,6 +549,20 @@
       if (openBtn) openBtn.addEventListener('click', openSidebar);
       if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
       backdrop.addEventListener('click', closeSidebar);
+
+      // Desktop'da panelni yig'ish/yoyish (ChatGPT/Claude uslubida) — holat
+      // localStorage'da saqlanadi, keyingi sahifalarda ham eslab qoladi.
+      const collapseBtn = document.getElementById('sidebar-collapse-btn');
+      if (collapseBtn) {
+        collapseBtn.addEventListener('click', function () {
+          const collapsed = sidebar.classList.toggle('collapsed');
+          localStorage.setItem('sidebarCollapsed', collapsed ? '1' : '0');
+          collapseBtn.title = collapsed ? "Panelni yoyish" : "Panelni yig'ish";
+        });
+        if (sidebar.classList.contains('collapsed')) {
+          collapseBtn.title = "Panelni yoyish";
+        }
+      }
     })();
 
     // Taklif havolasini (yoki istalgan matnni) buferga nusxalash — tugma
