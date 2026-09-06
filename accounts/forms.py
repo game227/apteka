@@ -7,9 +7,12 @@ from config.form_utils import style_form
 
 
 class RegisterForm(UserCreationForm):
+    """Telefon raqami bu yerda so'ralmaydi — ro'yxatdan o'tishni qisqartirish
+    uchun ataylab olib tashlangan, kerak bo'lsa keyinroq profildan
+    qo'shish mumkin."""
+
     first_name = forms.CharField(label="Ism", max_length=150, required=True)
     email = forms.EmailField(label="Email", required=True, help_text="Parolni unutsangiz shu manzilga tiklash havolasi yuboriladi.")
-    phone = forms.CharField(label="Telefon", max_length=32, required=False)
     terms_accepted = forms.BooleanField(
         required=True,
         label="Foydalanish shartlariga roziman",
@@ -18,7 +21,7 @@ class RegisterForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ["username", "first_name", "email", "phone", "password1", "password2", "terms_accepted"]
+        fields = ["username", "first_name", "email", "password1", "password2", "terms_accepted"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -26,7 +29,6 @@ class RegisterForm(UserCreationForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.phone = self.cleaned_data.get("phone", "")
         user.accepted_terms_at = timezone.now()
         if commit:
             user.save()
